@@ -61,7 +61,18 @@ export const P = {
   FNO_910_FILING_DUE: paramKey<PeriodOffsetDate>('fno.910.filing.due'),
   PAYROLL_TAXES_PAYMENT_DUE: paramKey<PeriodOffsetDate>('payroll.taxes.payment.due'),
 
-  // §10 — требуют подтверждения экспертом (TODO_VERIFY)
+  // Уведомления КГД
+  KGD_NOTICE_RESPONSE_DAYS: paramKey<DayCount>('kgd.notice.response.days'),
+
+  // §10 и штрафы КоАП — требуют подтверждения экспертом (TODO_VERIFY)
+  IPN_ADDITIONAL_DEDUCTION_MRP: paramKey<{ disabilityAnnual: number; privilegedAnnual: number }>(
+    'ipn.additional.deduction.mrp',
+  ),
+  KOAP_ESF_NONISSUE_FINE_MRP: paramKey<number>('koap.esf.nonissue.fine.mrp'),
+  KOAP_FNO_LATE_FINE_MRP: paramKey<number>('koap.fno.late.fine.mrp'),
+  KOAP_ESUTD_FINE_MRP: paramKey<number>('koap.esutd.fine.mrp'),
+  KOAP_VAT_REGISTRATION_FINE_MRP: paramKey<number>('koap.vat.registration.fine.mrp'),
+  CALENDAR_HOLIDAYS: paramKey<readonly string[]>('calendar.holidays'),
   IPN_DIVIDENDS: paramKey<{ rate: Rate; ceilingMrp: number }>('ipn.dividends'),
   UNIFIED_PAYMENT_RATE: paramKey<Rate>('unified.payment.rate'),
   ESUTD_REGISTRATION_DEADLINE: paramKey<DayCount>('esutd.registration.deadline'),

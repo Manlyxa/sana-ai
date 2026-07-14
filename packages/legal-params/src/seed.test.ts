@@ -120,9 +120,15 @@ describe('seed: гигиена данных (P2, P3, §10)', () => {
     const flagged = store.todoVerify().map((p) => p.key);
     expect(flagged).toEqual([
       'audit.mandatory.thresholds',
+      'calendar.holidays',
       'cash.settlement.limit.mrp',
       'esutd.registration.deadline',
+      'ipn.additional.deduction.mrp',
       'ipn.dividends',
+      'koap.esf.nonissue.fine.mrp',
+      'koap.esutd.fine.mrp',
+      'koap.fno.late.fine.mrp',
+      'koap.vat.registration.fine.mrp',
       'kpn.depreciation.norms',
       'kpn.loss.carryforward.years',
       'snr.supplier.deduction.ban',
@@ -135,6 +141,6 @@ describe('seed: гигиена данных (P2, P3, §10)', () => {
     for (const p of store.todoVerify()) {
       expect(report).toContain(p.key);
     }
-    expect(report).toContain('Всего: 8.');
+    expect(report).toContain('Всего: 14.');
   });
 });

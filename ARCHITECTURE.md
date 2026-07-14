@@ -133,8 +133,8 @@ third-party APIs (determines API vs. RPA adapters).
 
 - [x] Phase 1 — kernel + legal params (Money, BIN/ИИН, TaxPeriod, temporal resolver; VAT 12%→16% proof)
 - [x] Phase 2 — domain entities + shadow ledger (Company/Counterparty/Employee/Invoice/TaxObligation; BusinessEvent store; dual JournalEntry/TaxRegisterEntry projections)
-- [ ] Phase 3 — payroll engine (tests first; cumulative ИПН)
-- [ ] Phase 4 — rule engine + MVP rules
+- [x] Phase 3 — payroll engine (§6 test cases written first; cumulative progressive ИПН; property test Σ monthly = annual)
+- [x] Phase 4 — rule engine + all 18 MVP rules (§7), each with firing and non-firing tests; findings carry tenge exposure, Justification, and autonomy-tagged remediation
 - [ ] Phase 5 — ports + fixture adapters + fixture data
 - [ ] Phase 6 — persistence (Drizzle + Postgres) and API (tRPC)
 - [ ] Phase 7 — worker (BullMQ)

@@ -3,3 +3,4 @@ export * from './store';
 export * from './keys';
 export * from './seed';
 export * from './report';
+export * from './build';

@@ -346,8 +346,80 @@ export const SEED_PARAMETERS: readonly LegalParameterInput<unknown>[] = [
   },
 
   // -------------------------------------------------------------------------
-  // §10 — ЗАКОДИРОВАНО ПО ЛУЧШИМ ДАННЫМ, ТРЕБУЕТ ПОДТВЕРЖДЕНИЯ ЭКСПЕРТОМ
+  // Уведомления КГД
   // -------------------------------------------------------------------------
+  {
+    key: 'kgd.notice.response.days',
+    value: { days: 30, kind: 'WORKING' },
+    validFrom: FROM_2026,
+    validTo: null,
+    norm: 'НК РК — исполнение уведомлений КГД',
+    source: NK_2026,
+    todoVerify: false,
+  },
+
+  // -------------------------------------------------------------------------
+  // §10 и штрафы КоАП — ЗАКОДИРОВАНО ПО ЛУЧШИМ ДАННЫМ, ТРЕБУЕТ ПОДТВЕРЖДЕНИЯ
+  // -------------------------------------------------------------------------
+  {
+    key: 'ipn.additional.deduction.mrp',
+    value: { disabilityAnnual: 882, privilegedAnnual: 5_000 },
+    validFrom: FROM_2026,
+    validTo: null,
+    norm: 'ст. 346 НК РК — дополнительные вычеты (882/5000 МРП) — подтвердить охват категорий',
+    source: 'подтвердить у эксперта',
+    todoVerify: true,
+  },
+  {
+    key: 'koap.esf.nonissue.fine.mrp',
+    value: 40,
+    validFrom: FROM_2026,
+    validTo: null,
+    norm: 'ст. 280-1 КоАП РК — невыписка ЭСФ (размер для среднего бизнеса не подтверждён)',
+    source: 'подтвердить у эксперта',
+    todoVerify: true,
+  },
+  {
+    key: 'koap.fno.late.fine.mrp',
+    value: 30,
+    validFrom: FROM_2026,
+    validTo: null,
+    norm: 'ст. 272 КоАП РК — непредставление ФНО (размер не подтверждён)',
+    source: 'подтвердить у эксперта',
+    todoVerify: true,
+  },
+  {
+    key: 'koap.esutd.fine.mrp',
+    value: 30,
+    validFrom: FROM_2026,
+    validTo: null,
+    norm: 'КоАП РК — нарушение регистрации трудовых договоров (размер не подтверждён)',
+    source: 'подтвердить у эксперта',
+    todoVerify: true,
+  },
+  {
+    key: 'koap.vat.registration.fine.mrp',
+    value: 50,
+    validFrom: FROM_2026,
+    validTo: null,
+    norm: 'ст. 269 КоАП РК — несвоевременная постановка на учёт по НДС (50 МРП, не подтверждён)',
+    source: 'подтвердить у эксперта',
+    todoVerify: true,
+  },
+  {
+    key: 'calendar.holidays',
+    value: [
+      '2026-01-01', '2026-01-02', '2026-01-07',
+      '2026-03-08', '2026-03-21', '2026-03-22', '2026-03-23',
+      '2026-05-01', '2026-05-07', '2026-05-09',
+      '2026-07-06', '2026-08-30', '2026-10-25', '2026-12-16',
+    ],
+    validFrom: FROM_2026,
+    validTo: D('2026-12-31'),
+    norm: 'ст. 84 ТК РК — праздничные дни (переносы выходных не учтены)',
+    source: 'подтвердить у эксперта (постановления о переносах)',
+    todoVerify: true,
+  },
   {
     key: 'ipn.dividends',
     value: { rate: Rate.percent(5), ceilingMrp: 230_000 },
