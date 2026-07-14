@@ -1,0 +1,36 @@
+{
+  "counterparties": {
+    "201140000007": {
+      "name": "ТОО «Алматы Снаб»",
+      "vatPayer": true,
+      "taxRegime": "ОУР",
+      "riskScore": 8,
+      "riskFlags": [],
+      "lastCheckedAt": "2026-05-01"
+    },
+    "130840000004": {
+      "name": "ТОО «Караганда Металл»",
+      "vatPayer": true,
+      "taxRegime": "ОУР",
+      "riskScore": 12,
+      "riskFlags": [],
+      "lastCheckedAt": "2026-05-01"
+    },
+    "180240000001": {
+      "name": "ТОО «Фантом Групп»",
+      "vatPayer": true,
+      "taxRegime": "НЕИЗВЕСТНО",
+      "riskScore": 96,
+      "riskFlags": ["LZHEPREDPRIYATIE", "TAX_DEBT"],
+      "lastCheckedAt": "2026-05-01"
+    },
+    "210640000004": {
+      "name": "ТОО «Сервис Плюс»",
+      "vatPayer": false,
+      "taxRegime": "СНР_УПРОЩЁНКА",
+      "riskScore": 20,
+      "riskFlags": [],
+      "lastCheckedAt": "2026-05-01"
+    }
+  }
+}

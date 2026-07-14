@@ -1,0 +1,8 @@
+{
+  "surRiskCategory": "СРЕДНЯЯ",
+  "balances": [
+    { "taxType": "НДС (КБК 105101)", "balance": "-910000.00" },
+    { "taxType": "КПН (КБК 101110)", "balance": "125000.00" },
+    { "taxType": "ИПН (КБК 101201)", "balance": "0.00" }
+  ]
+}

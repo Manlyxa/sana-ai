@@ -1,0 +1,7 @@
+{
+  "receipts": [
+    { "id": "FR-2026-000411", "kkmRegistrationNumber": "KKM-104512", "issuedAt": "2026-02-14", "total": "56000.00", "vatAmount": "7724.14" },
+    { "id": "FR-2026-000412", "kkmRegistrationNumber": "KKM-104512", "issuedAt": "2026-03-02", "total": "128000.00", "vatAmount": "17655.17" },
+    { "id": "FR-2026-000413", "kkmRegistrationNumber": "KKM-104512", "issuedAt": "2026-04-11", "total": "84500.00", "vatAmount": "11655.17" }
+  ]
+}

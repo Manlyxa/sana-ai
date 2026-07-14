@@ -1,0 +1,31 @@
+{
+  "obligations": [
+    {
+      "id": "OBL-2026-300-Q1",
+      "kind": "ФНО_300",
+      "period": "2026-Q1",
+      "dueDate": "2026-05-15",
+      "amount": "2340000.00",
+      "status": "PENDING",
+      "autonomyLevel": "A1"
+    },
+    {
+      "id": "OBL-2026-NDS-PAY-Q4-2025",
+      "kind": "НДС_ПЛАТЁЖ",
+      "period": "2025-Q4",
+      "dueDate": "2026-02-25",
+      "amount": "910000.00",
+      "status": "PENDING",
+      "autonomyLevel": "A1"
+    },
+    {
+      "id": "OBL-2026-200-Q1",
+      "kind": "ФНО_200",
+      "period": "2026-Q1",
+      "dueDate": "2026-05-15",
+      "amount": null,
+      "status": "PREPARED",
+      "autonomyLevel": "A1"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice xmlns="esf:invoice:v2">
+  <registrationNumber>ESF-OUT-2026-0002</registrationNumber>
+  <status>DRAFT</status>
+  <turnoverDate>2026-04-01</turnoverDate>
+  <seller>
+    <tin>120540000001</tin>
+    <name>ТОО «Демо Трейд»</name>
+    <address>г. Алматы, ул. Абая, 150</address>
+  </seller>
+  <customer>
+    <tin>201140000007</tin>
+    <name>ТОО «Алматы Снаб»</name>
+    <address>г. Алматы, пр. Райымбека, 221</address>
+  </customer>
+  <invoiceLines>
+    <invoiceLine>
+      <description>Строительные материалы (партия 04/26)</description>
+      <quantity>40</quantity>
+      <priceWithoutTax>1200000.00</priceWithoutTax>
+      <ndsRate>16</ndsRate>
+      <ndsAmount>192000.00</ndsAmount>
+    </invoiceLine>
+  </invoiceLines>
+  <totalPriceWithoutTax>1200000.00</totalPriceWithoutTax>
+  <totalNdsAmount>192000.00</totalNdsAmount>
+</invoice>

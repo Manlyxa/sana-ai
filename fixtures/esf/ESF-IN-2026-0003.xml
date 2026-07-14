@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice xmlns="esf:invoice:v2">
+  <registrationNumber>ESF-IN-2026-0003</registrationNumber>
+  <status>CONFIRMED_BY_CUSTOMER</status>
+  <turnoverDate>2026-03-18</turnoverDate>
+  <date>2026-03-19</date>
+  <confirmedDate>2026-03-20</confirmedDate>
+  <seller>
+    <tin>210640000004</tin>
+    <name>ТОО «Сервис Плюс»</name>
+    <address>г. Астана, ул. Кенесары, 40</address>
+  </seller>
+  <customer>
+    <tin>120540000001</tin>
+    <name>ТОО «Демо Трейд»</name>
+    <address>г. Алматы, ул. Абая, 150</address>
+  </customer>
+  <invoiceLines>
+    <invoiceLine>
+      <description>Клининговые услуги, март 2026</description>
+      <quantity>1</quantity>
+      <priceWithoutTax>650000.00</priceWithoutTax>
+      <ndsRate>0</ndsRate>
+      <ndsAmount>0.00</ndsAmount>
+    </invoiceLine>
+  </invoiceLines>
+  <totalPriceWithoutTax>650000.00</totalPriceWithoutTax>
+  <totalNdsAmount>0.00</totalNdsAmount>
+</invoice>

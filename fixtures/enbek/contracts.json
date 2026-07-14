@@ -1,0 +1,16 @@
+{
+  "contracts": [
+    { "contractNumber": "ТД-2019-01", "iin": "850214300001", "fullName": "Ахметов Серик Болатович", "hiredAt": "2019-03-01", "registeredAt": "2019-03-04", "terminatedAt": null },
+    { "contractNumber": "ТД-2019-02", "iin": "900515300008", "fullName": "Жумабаев Ерлан Кайратович", "hiredAt": "2019-06-10", "registeredAt": "2019-06-12", "terminatedAt": null },
+    { "contractNumber": "ТД-2020-03", "iin": "921103400000", "fullName": "Сулейменова Айгерим Нурлановна", "hiredAt": "2020-01-15", "registeredAt": "2020-01-17", "terminatedAt": null },
+    { "contractNumber": "ТД-2020-04", "iin": "780622300002", "fullName": "Оспанов Даурен Маратович", "hiredAt": "2020-09-01", "registeredAt": "2020-09-03", "terminatedAt": null },
+    { "contractNumber": "ТД-2021-05", "iin": "700301300002", "fullName": "Касымов Болат Турсынович", "hiredAt": "2021-02-01", "registeredAt": "2021-02-02", "terminatedAt": null },
+    { "contractNumber": "ТД-2021-06", "iin": "880917400003", "fullName": "Нурланова Динара Сакеновна", "hiredAt": "2021-11-22", "registeredAt": "2021-11-24", "terminatedAt": null },
+    { "contractNumber": "ТД-2022-07", "iin": "950128300003", "fullName": "Токтаров Алишер Ермекович", "hiredAt": "2022-04-04", "registeredAt": "2022-04-06", "terminatedAt": null },
+    { "contractNumber": "ТД-2022-08", "iin": "830409400002", "fullName": "Бекова Гульнара Амановна", "hiredAt": "2022-08-15", "registeredAt": "2022-08-17", "terminatedAt": null },
+    { "contractNumber": "ТД-2023-09", "iin": "991230300008", "fullName": "Мухтаров Темирлан Русланович", "hiredAt": "2023-05-02", "registeredAt": "2023-05-03", "terminatedAt": null },
+    { "contractNumber": "ТД-2024-10", "iin": "010704500001", "fullName": "Ибраев Нурсултан Азаматович", "hiredAt": "2024-07-01", "registeredAt": "2024-07-02", "terminatedAt": null },
+    { "contractNumber": "ТД-2025-11", "iin": "020816600009", "fullName": "Смагулова Камила Ерлановна", "hiredAt": "2025-10-13", "registeredAt": "2025-10-15", "terminatedAt": null },
+    { "contractNumber": "ТД-2026-12", "iin": "751105300009", "fullName": "Байжанов Куаныш Сабитович", "hiredAt": "2026-03-02", "registeredAt": null, "terminatedAt": null }
+  ]
+}

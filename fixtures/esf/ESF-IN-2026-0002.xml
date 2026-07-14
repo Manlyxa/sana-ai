@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice xmlns="esf:invoice:v2">
+  <registrationNumber>ESF-IN-2026-0002</registrationNumber>
+  <status>CONFIRMED_BY_CUSTOMER</status>
+  <turnoverDate>2026-03-05</turnoverDate>
+  <date>2026-03-06</date>
+  <confirmedDate>2026-03-10</confirmedDate>
+  <seller>
+    <tin>180240000001</tin>
+    <name>ТОО «Фантом Групп»</name>
+    <address>г. Шымкент, ул. Туркестанская, 8</address>
+  </seller>
+  <customer>
+    <tin>120540000001</tin>
+    <name>ТОО «Демо Трейд»</name>
+    <address>г. Алматы, ул. Абая, 150</address>
+  </customer>
+  <invoiceLines>
+    <invoiceLine>
+      <description>Консультационные услуги по логистике</description>
+      <quantity>1</quantity>
+      <priceWithoutTax>1800000.00</priceWithoutTax>
+      <ndsRate>16</ndsRate>
+      <ndsAmount>288000.00</ndsAmount>
+    </invoiceLine>
+  </invoiceLines>
+  <totalPriceWithoutTax>1800000.00</totalPriceWithoutTax>
+  <totalNdsAmount>288000.00</totalNdsAmount>
+</invoice>
