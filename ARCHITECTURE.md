@@ -135,7 +135,7 @@ third-party APIs (determines API vs. RPA adapters).
 - [x] Phase 2 — domain entities + shadow ledger (Company/Counterparty/Employee/Invoice/TaxObligation; BusinessEvent store; dual JournalEntry/TaxRegisterEntry projections)
 - [x] Phase 3 — payroll engine (§6 test cases written first; cumulative progressive ИПН; property test Σ monthly = annual)
 - [x] Phase 4 — rule engine + all 18 MVP rules (§7), each with firing and non-firing tests; findings carry tenge exposure, Justification, and autonomy-tagged remediation
-- [ ] Phase 5 — ports + fixture adapters + fixture data
+- [x] Phase 5 — ports + fixture adapters + fixture data (end-to-end on fixtures: ingest → shadow ledger → 9 rules fire with tenge exposure; zero external credentials)
 - [ ] Phase 6 — persistence (Drizzle + Postgres) and API (tRPC)
 - [ ] Phase 7 — worker (BullMQ)
 - [ ] Phase 8 — web app (risk feed in tenge at risk)
