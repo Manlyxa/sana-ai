@@ -132,7 +132,7 @@ third-party APIs (determines API vs. RPA adapters).
 ## Build order status
 
 - [x] Phase 1 — kernel + legal params (Money, BIN/ИИН, TaxPeriod, temporal resolver; VAT 12%→16% proof)
-- [ ] Phase 2 — domain entities + shadow ledger
+- [x] Phase 2 — domain entities + shadow ledger (Company/Counterparty/Employee/Invoice/TaxObligation; BusinessEvent store; dual JournalEntry/TaxRegisterEntry projections)
 - [ ] Phase 3 — payroll engine (tests first; cumulative ИПН)
 - [ ] Phase 4 — rule engine + MVP rules
 - [ ] Phase 5 — ports + fixture adapters + fixture data
