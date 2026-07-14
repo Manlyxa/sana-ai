@@ -116,3 +116,81 @@ export function testEvent<T extends BusinessEventType>(
     }),
   );
 }
+
+// ---------------------------------------------------------------------------
+// Параметры законодательства 2026 для тестов (значения §5 спецификации)
+// ---------------------------------------------------------------------------
+
+import type { PayrollLawParams } from '../payroll/params';
+
+export function payrollParams2026(): PayrollLawParams {
+  return {
+    version: 'legal-params@2026-01-01',
+    mrp: Money.ofMajor(4_325),
+    mzp: Money.ofMajor(85_000),
+    opv: { rate: Rate.percent(10), capMzp: 50 },
+    vosms: { rate: Rate.percent(2), capMzp: 20 },
+    opvr: { rate: Rate.percent('3.5'), capMzp: 50, exemptIfBornBefore: D('1975-01-01') },
+    so: { rate: Rate.percent(5), floorMzp: 1, capMzp: 7 },
+    oosms: { rate: Rate.percent(3), capMzp: 40 },
+    sn: { rate: Rate.percent(6) },
+    ipn: {
+      bracket1Rate: Rate.percent(10),
+      bracket1CeilingMrp: 8_500,
+      bracket2Rate: Rate.percent(15),
+      standardDeductionMrpPerMonth: 30,
+      standardDeductionMrpAnnualMax: 360,
+      additionalDeductionDisabilityMrpAnnual: 882,
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Контекст компании для тестов правил (§7): чистые данные — ничего не срабатывает
+// ---------------------------------------------------------------------------
+
+import type { CompanyContext, RuleLawParams } from '../rules/context';
+
+export function ruleLawParams2026(): RuleLawParams {
+  return {
+    version: 'legal-params@2026-01-01',
+    mrp: Money.ofMajor(4_325),
+    mzp: Money.ofMajor(85_000),
+    vatRegistrationThresholdMrp: 10_000,
+    vatRegistrationApplicationWorkingDays: 5,
+    esfIssueDeadlineCalendarDays: 15,
+    esfNonresidentDeadlineCalendarDays: 5,
+    fno300Closes: { monthsAfterPeriodEnd: 2, dayOfMonth: 15 },
+    ipnBracket1Rate: Rate.percent(10),
+    kpnRate: Rate.percent(20),
+    opvrExemptIfBornBefore: D('1975-01-01'),
+    ipnStandardDeductionMrpPerMonth: 30,
+    esutdRegistrationWorkingDays: 5,
+    noticeResponseWorkingDays: 30,
+    fineEsfNonIssueMrp: 40,
+    fineFnoLateMrp: 30,
+    fineEsutdMrp: 30,
+    fineVatRegistrationMrp: 50,
+    holidays: new Set<string>(),
+  };
+}
+
+/** Контекст «здоровой» компании: ни одно правило не должно сработать. */
+export function testRuleContext(overrides: Partial<CompanyContext> = {}): CompanyContext {
+  return {
+    company: testCompany(),
+    counterparties: [testCounterparty()],
+    invoices: [],
+    obligations: [],
+    employees: [],
+    events: [],
+    taxNotices: [],
+    advances: [],
+    nonResidentVatPayments: [],
+    externalPayroll: [],
+    finalSettlements: [],
+    virtualWarehouse: [],
+    law: ruleLawParams2026(),
+    ...overrides,
+  };
+}
