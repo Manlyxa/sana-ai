@@ -18,6 +18,10 @@ import * as schema from './schema';
 export type Db = PgliteDatabase<typeof schema> | NodePgDatabase<typeof schema>;
 
 function migrationsFolder(): string {
+  // В бандлере (Next) import.meta.url указывает внутрь сборки —
+  // путь переопределяется переменной окружения.
+  const override = process.env['SANA_MIGRATIONS_DIR'];
+  if (override !== undefined && override !== '') return override;
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../drizzle');
 }
 
