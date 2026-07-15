@@ -137,6 +137,6 @@ third-party APIs (determines API vs. RPA adapters).
 - [x] Phase 4 — rule engine + all 18 MVP rules (§7), each with firing and non-firing tests; findings carry tenge exposure, Justification, and autonomy-tagged remediation
 - [x] Phase 5 — ports + fixture adapters + fixture data (end-to-end on fixtures: ingest → shadow ledger → 9 rules fire with tenge exposure; zero external credentials)
 - [x] Phase 6 — persistence (Drizzle + Postgres 16, checked-in migrations, PGlite for dev/tests) and tRPC API (risk feed, runCheck ingestion, remediation behind the P6 autonomy guard)
-- [ ] Phase 7 — worker (BullMQ)
-- [ ] Phase 8 — web app (risk feed in tenge at risk)
+- [x] Phase 7 — worker (BullMQ + Redis: hourly compliance heartbeat + morning risk digest, Asia/Almaty cron; handlers are pure functions tested without Redis, wiring integration-tested against a live redis-server)
+- [x] Phase 8 — web app (Next.js App Router + Tailwind: the risk feed sorted by tenge at risk; every finding shows money, norm, source documents, parameter version, and an autonomy-enforced remediation action)
 - [ ] Phase 9 — LLM agents
