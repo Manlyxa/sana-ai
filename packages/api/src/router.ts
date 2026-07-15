@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { authorizeExecution, type Finding } from '@sana/domain';
-import { runComplianceCheck } from '@sana/app';
+import { runAndPersistComplianceCheck } from '@sana/app';
 import type { ApiContext } from './context';
 
 /**
@@ -46,7 +46,7 @@ export const appRouter = router({
 
   /** Прогнать комплаенс-проверку: порты → теневой регистр → правила → БД. */
   runCheck: publicProcedure.mutation(async ({ ctx }) => {
-    const result = await runComplianceCheck(ctx.ports, {
+    const result = await runAndPersistComplianceCheck(ctx.ports, ctx.repos, {
       company: ctx.company,
       accountIban: ctx.accountIban,
       law: ctx.law,
@@ -55,22 +55,8 @@ export const appRouter = router({
     if (!result.ok) {
       throw new TRPCError({ code: 'BAD_GATEWAY', message: result.error.message });
     }
-    const { eventStore, journal, taxRegisters, findings } = result.value;
-
-    const appended = await ctx.repos.events.appendAll(eventStore.all());
-    if (!appended.ok) {
-      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: JSON.stringify(appended.error) });
-    }
-    await ctx.repos.ledger.replaceJournal(ctx.company.id, journal);
-    await ctx.repos.ledger.replaceTaxRegisters(ctx.company.id, taxRegisters);
-    const reconciled = await ctx.repos.findings.reconcileRun(ctx.company.id, findings, ctx.today);
-
-    return {
-      eventsIngested: appended.value,
-      journalEntries: journal.length,
-      taxRegisterEntries: taxRegisters.length,
-      findings: reconciled,
-    };
+    const { eventsIngested, journalEntries, taxRegisterEntries, findings } = result.value;
+    return { eventsIngested, journalEntries, taxRegisterEntries, findings };
   }),
 
   /** Лента рисков: открытые находки по убыванию тенге под риском. */
