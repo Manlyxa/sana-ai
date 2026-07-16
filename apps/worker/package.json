@@ -1,0 +1,27 @@
+{
+  "name": "@sana/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "dev": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@sana/adapters": "workspace:*",
+    "@sana/app": "workspace:*",
+    "@sana/db": "workspace:*",
+    "@sana/domain": "workspace:*",
+    "@sana/legal-params": "workspace:*",
+    "@sana/ports": "workspace:*",
+    "bullmq": "^5.56.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "tsx": "^4.20.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
