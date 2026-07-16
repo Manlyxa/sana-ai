@@ -44,6 +44,11 @@ they are never in the path of computing a tax amount.
 
 Enforced by: `@sana/domain` having no LLM dependency at all, and `LlmPort`
 living in `packages/ports` where domain code cannot import implementations.
+In practice (phase 9): the RegimeAdvisor's money numbers come from a pure
+`simulateRegimes` function and the LLM prompt explicitly forbids recomputing
+them; the NoticeInterpreter only extracts what the notice text says and routes
+low-confidence parses to a human; the Explainer falls back to the finding's
+deterministic Russian message when the LLM is unavailable.
 
 ### P2 — Legislation is versioned data, not code
 
@@ -139,4 +144,4 @@ third-party APIs (determines API vs. RPA adapters).
 - [x] Phase 6 — persistence (Drizzle + Postgres 16, checked-in migrations, PGlite for dev/tests) and tRPC API (risk feed, runCheck ingestion, remediation behind the P6 autonomy guard)
 - [x] Phase 7 — worker (BullMQ + Redis: hourly compliance heartbeat + morning risk digest, Asia/Almaty cron; handlers are pure functions tested without Redis, wiring integration-tested against a live redis-server)
 - [x] Phase 8 — web app (Next.js App Router + Tailwind: the risk feed sorted by tenge at risk; every finding shows money, norm, source documents, parameter version, and an autonomy-enforced remediation action)
-- [ ] Phase 9 — LLM agents
+- [x] Phase 9 — LLM agents behind LlmPort (P1): NoticeInterpreter (КГД notice text → structured obligation + draft response, low confidence routes to a human), RegimeAdvisor (deterministic ОУР-vs-упрощёнка simulation computed in code; the LLM only reasons over the numbers), Explainer (Justification → owner-friendly sentence with a deterministic fallback). Real AnthropicLlmAdapter (structured outputs, refusal handling) behind the same port; agents are fully tested against MockLlmAdapter.
