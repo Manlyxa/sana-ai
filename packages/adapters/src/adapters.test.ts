@@ -173,6 +173,12 @@ describe('MockSignatureProvider (P4)', () => {
 describe('MockLlmAdapter (P1)', () => {
   const schema: LlmSchema<{ amount: number }> = {
     name: 'notice-extract',
+    jsonSchema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['amount'],
+      properties: { amount: { type: 'number' } },
+    },
     parse: (raw) => {
       const parsed = z.object({ amount: z.number() }).safeParse(raw);
       return parsed.success ? ok(parsed.data) : err(parsed.error.message);

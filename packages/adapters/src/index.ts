@@ -8,3 +8,4 @@ export * from './fixture-counterparty-registry-adapter';
 export * from './fixture-ofd-adapter';
 export * from './mock-signature-provider';
 export * from './mock-llm-adapter';
+export * from './anthropic-llm-adapter';

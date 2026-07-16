@@ -7,10 +7,12 @@ import type { PortError } from './common';
  * вычисления суммы налога.
  */
 
-/** Схема структурированного ответа: имя + строгий парсер (Zod-обёртка в адаптере). */
+/** Схема структурированного ответа: имя, JSON Schema для structured outputs и строгий парсер. */
 export type LlmSchema<T> = {
   readonly name: string;
   readonly description?: string;
+  /** JSON Schema, передаётся модели как output_config.format (structured outputs). */
+  readonly jsonSchema: Record<string, unknown>;
   readonly parse: (raw: unknown) => Result<T, string>;
 };
 
