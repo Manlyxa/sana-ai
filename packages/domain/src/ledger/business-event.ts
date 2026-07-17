@@ -31,6 +31,14 @@ export type BankTransactionPayload = {
   readonly knp: string | null;
 };
 
+/** Фискальный чек ОФД (розничная выручка). */
+export type OfdReceiptPayload = {
+  readonly receiptId: string;
+  readonly kkmRegistrationNumber: string;
+  readonly total: Money;
+  readonly vatAmount: Money;
+};
+
 export type EsfStatusChangedPayload = {
   readonly invoiceId: string;
   readonly from: InvoiceStatus;
@@ -43,6 +51,7 @@ export type EventPayloadMap = {
   ESF_RECEIVED: { readonly invoice: Invoice };
   ESF_STATUS_CHANGED: EsfStatusChangedPayload;
   BANK_TRANSACTION: BankTransactionPayload;
+  OFD_RECEIPT: OfdReceiptPayload;
   EMPLOYEE_HIRED: { readonly employee: Employee };
   EMPLOYEE_TERMINATED: { readonly iin: Iin; readonly terminatedAt: LocalDate };
 };

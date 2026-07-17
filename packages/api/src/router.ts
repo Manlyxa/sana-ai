@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authorizeExecution, type Finding } from '@sana/domain';
 import { runAndPersistComplianceCheck } from '@sana/app';
 import type { ApiContext } from './context';
+import { accountingRouter } from './accounting-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -34,6 +35,9 @@ function findingToDto(f: Finding) {
 
 export const appRouter = router({
   health: publicProcedure.query(() => ({ status: 'ok' as const })),
+
+  /** Бухгалтерский контур (Modules 1–5) — аддитивный саброутер. */
+  accounting: accountingRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,

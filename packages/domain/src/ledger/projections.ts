@@ -76,6 +76,8 @@ function journalLinesFor(event: BusinessEvent): readonly JournalLine[] | null {
         { account: ACCOUNTS.CASH_BANK, side: 'CREDIT', amount: p.amount },
       ];
     }
+    // Чеки ОФД обрабатывает движок автопроводок (accounting/posting).
+    case 'OFD_RECEIPT':
     // Кадровые и статусные события не порождают проводок.
     case 'ESF_STATUS_CHANGED':
     case 'EMPLOYEE_HIRED':
@@ -157,6 +159,7 @@ export function projectTaxRegisterEntries(event: BusinessEvent): readonly TaxReg
     }
     // Банковские, кадровые и статусные события в налоговые регистры не попадают.
     case 'BANK_TRANSACTION':
+    case 'OFD_RECEIPT':
     case 'ESF_STATUS_CHANGED':
     case 'EMPLOYEE_HIRED':
     case 'EMPLOYEE_TERMINATED':
