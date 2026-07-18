@@ -110,6 +110,33 @@ export const appRouter = router({
   }),
 
   /**
+   * «Решено» по находке Sana Guard (§3б): реальная смена статуса в
+   * реестре находок (resolvedAt/кем/почему), а не фронтенд-тумблер.
+   */
+  resolveFinding: publicProcedure
+    .input(
+      z.object({
+        findingId: z.string(),
+        resolvedBy: z.string().min(1),
+        note: z.string().nullish(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const resolved = await ctx.repos.findings.resolve(input.findingId, {
+        resolvedBy: input.resolvedBy,
+        at: ctx.today,
+        note: input.note ?? null,
+      });
+      if (!resolved) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: `находка ${input.findingId} не найдена или уже решена`,
+        });
+      }
+      return { сообщение: 'Находка отмечена решённой.', findingId: input.findingId };
+    }),
+
+  /**
    * Исполнить ремедиацию находки. Единственная дверь к исполнению —
    * autonomy guard: A3 идёт сразу, A2 требует подтверждения,
    * A1 — артефакта подписи, A0 не исполняется системой.

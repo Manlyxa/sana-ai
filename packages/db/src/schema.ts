@@ -101,4 +101,8 @@ export const findings = pgTable('findings', {
   remediation: jsonb('remediation').$type<unknown>().notNull(),
   firstDetectedAt: date('first_detected_at').notNull(),
   resolvedAt: date('resolved_at'),
+  /** Кто отметил «решено» вручную; null — закрыта автоматически сверкой прогона. */
+  resolvedBy: text('resolved_by'),
+  /** Причина ручного решения («оплачено», «ЭСФ выписана», …). */
+  resolutionNote: text('resolution_note'),
 });

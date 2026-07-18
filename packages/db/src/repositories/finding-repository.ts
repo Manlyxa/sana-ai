@@ -60,6 +60,8 @@ export class FindingRepository {
             justification: values.justification,
             remediation: values.remediation,
             resolvedAt: null,
+            resolvedBy: null,
+            resolutionNote: null,
           },
         });
       if (openIds.has(f.id)) retained += 1;
@@ -84,6 +86,23 @@ export class FindingRepository {
       .where(and(eq(findings.companyId, companyId), isNull(findings.resolvedAt)))
       .orderBy(desc(findings.exposureTiyn));
     return allResults(rows.map(deserializeFinding));
+  }
+
+  /**
+   * «Решено» вручную (§3б): реальная смена статуса находки в реестре —
+   * resolvedAt/resolvedBy/причина. Возвращает false, если находка не
+   * найдена или уже решена (идемпотентность на стороне вызывающего).
+   */
+  async resolve(
+    findingId: string,
+    args: { readonly resolvedBy: string; readonly at: LocalDate; readonly note: string | null },
+  ): Promise<boolean> {
+    const updated = await this.db
+      .update(findings)
+      .set({ resolvedAt: args.at.toISO(), resolvedBy: args.resolvedBy, resolutionNote: args.note })
+      .where(and(eq(findings.id, findingId), isNull(findings.resolvedAt)))
+      .returning();
+    return updated.length > 0;
   }
 
   async getOpen(findingId: string): Promise<Result<Finding, string> | null> {
