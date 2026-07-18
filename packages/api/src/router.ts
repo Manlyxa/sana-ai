@@ -6,6 +6,7 @@ import type { ApiContext } from './context';
 import { accountingRouter } from './accounting-router';
 import { payrollRouter } from './payroll-router';
 import { calculatorsRouter } from './calculators-router';
+import { counterpartiesRouter } from './counterparties-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -46,6 +47,9 @@ export const appRouter = router({
 
   /** Калькуляторы (§11) — те же формулы, что в движке. */
   calculators: calculatorsRouter,
+
+  /** Контрагенты (§7) — список по проводкам + проверка по БИН. */
+  counterparties: counterpartiesRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,
