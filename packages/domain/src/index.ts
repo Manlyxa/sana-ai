@@ -7,4 +7,5 @@ export * from './reporting/index';
 export * from './autonomy/index';
 export * from './payroll/index';
 export * from './calculators/index';
+export * from './declarations/index';
 export * from './rules/index';

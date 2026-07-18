@@ -1,4 +1,5 @@
 import {
+  type Form910Params,
   type LocalDate,
   type PayrollLawParams,
   type PenaltyLawParams,
@@ -88,6 +89,21 @@ export function buildPenaltyLawParams(
     version: `legal-params@${asOf.toISO()}`,
     annualBaseRate: get(P.PENALTY_NBRK_BASE_RATE),
     multiplier: get(P.PENALTY_MULTIPLIER),
+  }));
+}
+
+/** Параметры формы 910.00 (§5): ставка СНР, предел дохода, срок сдачи. */
+export function buildForm910Params(
+  store: LegalParameterStore,
+  asOf: LocalDate,
+): Result<Form910Params, ResolveError> {
+  const get = resolver(store, asOf);
+  return catching(() => ({
+    version: `legal-params@${asOf.toISO()}`,
+    rate: get(P.SNR_UPROSHCHENKA_RATE),
+    incomeLimitMrp: get(P.SNR_UPROSHCHENKA_INCOME_LIMIT_MRP),
+    mrp: get(P.MRP),
+    filingDue: get(P.FNO_910_FILING_DUE),
   }));
 }
 
