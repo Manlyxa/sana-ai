@@ -24,6 +24,11 @@ const t = initTRPC.context<ApiContext>().create();
 /** In-memory workspace per API context (single-company MVP). */
 const workspaces = new WeakMap<object, AccountingWorkspace>();
 
+/** Единый бухгалтерский workspace контекста — общий реестр для всех модулей. */
+export function accountingWorkspace(ctx: ApiContext): AccountingWorkspace {
+  return workspace(ctx);
+}
+
 function workspace(ctx: ApiContext): AccountingWorkspace {
   let ws = workspaces.get(ctx);
   if (ws === undefined) {

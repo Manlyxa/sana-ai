@@ -6,3 +6,5 @@ export * from './accounting/accounting-workspace';
 export * from './accounting/ai-classifier';
 export * from './accounting/journal-import';
 export * from './accounting/explain';
+export * from './payroll/load-payroll';
+export * from './payroll/payroll-run';

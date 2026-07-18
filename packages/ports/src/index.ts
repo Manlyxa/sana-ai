@@ -7,3 +7,4 @@ export * from './ofd-port';
 export * from './enbek-port';
 export * from './counterparty-registry-port';
 export * from './llm-port';
+export * from './payroll-port';

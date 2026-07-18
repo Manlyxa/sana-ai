@@ -4,6 +4,7 @@ import { authorizeExecution, type Finding } from '@sana/domain';
 import { runAndPersistComplianceCheck } from '@sana/app';
 import type { ApiContext } from './context';
 import { accountingRouter } from './accounting-router';
+import { payrollRouter } from './payroll-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -38,6 +39,9 @@ export const appRouter = router({
 
   /** Бухгалтерский контур (Modules 1–5) — аддитивный саброутер. */
   accounting: accountingRouter,
+
+  /** Зарплата и кадры (§6) — ведомость, подтверждение, начисление. */
+  payroll: payrollRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,

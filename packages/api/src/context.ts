@@ -13,11 +13,12 @@ import {
   FixtureCounterpartyRegistryAdapter,
   FixtureEnbekAdapter,
   FixtureEsfAdapter,
+  FixturePayrollAdapter,
   FixtureTaxCabinetAdapter,
   MockSignatureProvider,
 } from '@sana/adapters';
 import type { CompliancePorts } from '@sana/app';
-import type { SignaturePort } from '@sana/ports';
+import type { PayrollDataPort, SignaturePort } from '@sana/ports';
 import {
   CompanyRepository,
   createInMemoryDb,
@@ -42,6 +43,8 @@ export type ApiContext = {
     readonly ledger: LedgerRepository;
   };
   readonly ports: CompliancePorts;
+  /** Источник ведомости начислений (§6) — отдельно от комплаенс-портов. */
+  readonly payrollData: PayrollDataPort;
   readonly signatures: SignaturePort;
   readonly company: Company;
   readonly accountIban: string;
@@ -87,6 +90,7 @@ export async function createDemoContext(db?: Db): Promise<ApiContext> {
       enbek: new FixtureEnbekAdapter(),
       registry: new FixtureCounterpartyRegistryAdapter(),
     },
+    payrollData: new FixturePayrollAdapter(),
     signatures: new MockSignatureProvider(),
     company,
     accountIban: DEMO_IBAN,
