@@ -131,6 +131,7 @@ describe('seed: гигиена данных (P2, P3, §10)', () => {
       'koap.vat.registration.fine.mrp',
       'kpn.depreciation.norms',
       'kpn.loss.carryforward.years',
+      'penalty.nbrk.base.rate',
       'snr.supplier.deduction.ban',
       'unified.payment.rate',
     ]);
@@ -141,6 +142,6 @@ describe('seed: гигиена данных (P2, P3, §10)', () => {
     for (const p of store.todoVerify()) {
       expect(report).toContain(p.key);
     }
-    expect(report).toContain('Всего: 14.');
+    expect(report).toContain('Всего: 15.');
   });
 });
