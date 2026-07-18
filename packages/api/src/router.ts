@@ -8,6 +8,7 @@ import { payrollRouter } from './payroll-router';
 import { calculatorsRouter } from './calculators-router';
 import { counterpartiesRouter } from './counterparties-router';
 import { declarationsRouter } from './declarations-router';
+import { reconciliationRouter } from './reconciliation-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -54,6 +55,9 @@ export const appRouter = router({
 
   /** Декларации ФНО (§5) — 910.00 расчётом, 200.00/300.00 мониторингом. */
   declarations: declarationsRouter,
+
+  /** Сверка данных (§12) — несовпадения человеческим языком. */
+  reconciliation: reconciliationRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,
