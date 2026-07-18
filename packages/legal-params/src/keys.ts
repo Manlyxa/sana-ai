@@ -64,6 +64,10 @@ export const P = {
   // Уведомления КГД
   KGD_NOTICE_RESPONSE_DAYS: paramKey<DayCount>('kgd.notice.response.days'),
 
+  // Пеня (§11)
+  PENALTY_NBRK_BASE_RATE: paramKey<Rate>('penalty.nbrk.base.rate'),
+  PENALTY_MULTIPLIER: paramKey<Rate>('penalty.multiplier'),
+
   // §10 и штрафы КоАП — требуют подтверждения экспертом (TODO_VERIFY)
   IPN_ADDITIONAL_DEDUCTION_MRP: paramKey<{ disabilityAnnual: number; privilegedAnnual: number }>(
     'ipn.additional.deduction.mrp',

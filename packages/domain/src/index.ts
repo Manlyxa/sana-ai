@@ -6,4 +6,5 @@ export * from './posting/index';
 export * from './reporting/index';
 export * from './autonomy/index';
 export * from './payroll/index';
+export * from './calculators/index';
 export * from './rules/index';

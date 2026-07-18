@@ -1,6 +1,8 @@
 import type { LocalDate } from '../../kernel/local-date';
 import { Money } from '../../kernel/money';
 import { Rate } from '../../kernel/rate';
+import { unwrap } from '../../kernel/result';
+import { calculateVatThreshold, type VatThresholdCalculation } from '../../calculators/calculators';
 import type { CompanyContext } from '../context';
 import { defineRule } from '../types';
 import { formatTenge, makeFinding } from '../helpers';
@@ -28,6 +30,19 @@ export function yearTurnover(ctx: CompanyContext, asOf: LocalDate): Money {
 const APPROACHING_SHARE = Rate.percent(80);
 const EXCESS_EXPOSURE_RATE = Rate.percent(15);
 
+/**
+ * Статус порога — ЕДИНОЙ функцией calculateVatThreshold (§11):
+ * лента рисков и калькулятор считают одними и теми же цифрами.
+ */
+function thresholdStatus(ctx: CompanyContext, asOf: LocalDate): VatThresholdCalculation {
+  return unwrap(
+    calculateVatThreshold(yearTurnover(ctx, asOf), {
+      mrp: ctx.law.mrp,
+      thresholdMrp: ctx.law.vatRegistrationThresholdMrp,
+    }),
+  );
+}
+
 const APPROACHING_ID = 'VAT_THRESHOLD_APPROACHING';
 const BREACHED_ID = 'VAT_THRESHOLD_BREACHED';
 const NORM = 'ст. 99 НК РК';
@@ -38,10 +53,10 @@ export const vatThresholdApproaching = defineRule({
   norm: NORM,
   evaluate: (ctx, asOf) => {
     if (ctx.company.vatStatus.registered) return [];
-    const turnover = yearTurnover(ctx, asOf);
-    const threshold = ctx.law.mrp.multiply(ctx.law.vatRegistrationThresholdMrp);
+    const status = thresholdStatus(ctx, asOf);
+    const { turnover, threshold } = status;
     const eighty = threshold.percent(APPROACHING_SHARE);
-    if (turnover.compareTo(eighty) < 0 || turnover.compareTo(threshold) >= 0) return [];
+    if (turnover.compareTo(eighty) < 0 || status.breached) return [];
     const fine = ctx.law.mrp.multiply(ctx.law.fineVatRegistrationMrp);
     return [
       makeFinding(ctx, asOf, {
@@ -68,10 +83,9 @@ export const vatThresholdBreached = defineRule({
   norm: NORM,
   evaluate: (ctx, asOf) => {
     if (ctx.company.vatStatus.registered) return [];
-    const turnover = yearTurnover(ctx, asOf);
-    const threshold = ctx.law.mrp.multiply(ctx.law.vatRegistrationThresholdMrp);
-    if (turnover.compareTo(threshold) < 0) return [];
-    const excess = turnover.subtract(threshold);
+    const status = thresholdStatus(ctx, asOf);
+    const { turnover, threshold, excess } = status;
+    if (!status.breached) return [];
     const exposure = ctx.law.mrp
       .multiply(ctx.law.fineVatRegistrationMrp)
       .add(excess.percent(EXCESS_EXPOSURE_RATE));

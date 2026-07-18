@@ -58,8 +58,12 @@ function capOf(mzp: Money, capMzp: number): Money {
   return mzp.multiply(capMzp);
 }
 
-/** Накопительный ИПН от накопительной базы: 10% до потолка + 15% сверх. */
-function cumulativeIpn(cumTaxable: Money, params: PayrollLawParams): Money {
+/**
+ * Накопительный ИПН от накопительной базы: 10% до потолка + 15% сверх.
+ * Экспортирована, потому что калькулятор ИПН (§11) обязан считать ТОЙ ЖЕ
+ * функцией, что и движок, — иначе они разойдутся.
+ */
+export function cumulativeIpn(cumTaxable: Money, params: PayrollLawParams): Money {
   const ceiling = params.mrp.multiply(params.ipn.bracket1CeilingMrp);
   const below = Money.min(cumTaxable, ceiling);
   const above = Money.max(cumTaxable.subtract(ceiling), Money.zero());

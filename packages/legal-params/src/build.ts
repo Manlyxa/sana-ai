@@ -1,6 +1,7 @@
 import {
   type LocalDate,
   type PayrollLawParams,
+  type PenaltyLawParams,
   type Result,
   type RuleLawParams,
   ok,
@@ -75,6 +76,19 @@ export function buildPayrollLawParams(
       },
     };
   });
+}
+
+/** Параметры пени (§11): базовая ставка НБ РК × кратность из НК. */
+export function buildPenaltyLawParams(
+  store: LegalParameterStore,
+  asOf: LocalDate,
+): Result<PenaltyLawParams, ResolveError> {
+  const get = resolver(store, asOf);
+  return catching(() => ({
+    version: `legal-params@${asOf.toISO()}`,
+    annualBaseRate: get(P.PENALTY_NBRK_BASE_RATE),
+    multiplier: get(P.PENALTY_MULTIPLIER),
+  }));
 }
 
 export function buildRuleLawParams(
