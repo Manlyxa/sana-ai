@@ -11,3 +11,4 @@ export * from './payroll/payroll-run';
 export * from './counterparties/counterparties';
 export * from './reconciliation/parse-recon-csv';
 export * from './banks/bank-directory';
+export * from './documents/document-intake';

@@ -12,6 +12,7 @@ import { reconciliationRouter } from './reconciliation-router';
 import { banksRouter } from './banks-router';
 import { calendarRouter } from './calendar-router';
 import { askRouter } from './ask-router';
+import { documentsRouter } from './documents-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -70,6 +71,9 @@ export const appRouter = router({
 
   /** «Спроси Sana» (§10) — ответ с нормой; расчёты уходят калькуляторам. */
   ask: askRouter,
+
+  /** Документы (§8) — OCR-фикстура через общую очередь подтверждения. */
+  documents: documentsRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,

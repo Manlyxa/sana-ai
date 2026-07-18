@@ -126,6 +126,39 @@ export class AccountingWorkspace {
     return ok({ kind: 'QUEUED', pending });
   }
 
+  /**
+   * Документ (§8): предложение строится тем же движком (правила →
+   * эвристики → подсказка OCR), но запись ВСЕГДА идёт в очередь
+   * подтверждения — первичка не проводится без человека (A2).
+   */
+  queueDocument(
+    event: BusinessEvent<'BANK_TRANSACTION'>,
+    suggestion: {
+      readonly debitAccount: string;
+      readonly creditAccount: string;
+      readonly category: string | null;
+      readonly confidence: number;
+      readonly explanation: string;
+    },
+  ): Result<PendingOperation, WorkspaceError> {
+    this.events.set(event.id, event);
+    const proposed = proposePosting(event, { learnedRules: this.rules, aiSuggestion: suggestion });
+    if (!proposed.ok) return err({ message: proposed.error.message });
+    if (proposed.value === null) {
+      return err({ message: 'документ не порождает проводки' });
+    }
+    const pending: PendingOperation = {
+      id: `po-${event.id}`,
+      companyId: event.companyId,
+      event,
+      proposal: proposed.value,
+      status: 'PENDING',
+      resolution: null,
+    };
+    this.queue.set(pending.id, pending);
+    return ok({ ...pending });
+  }
+
   /** Подтвердить как есть. */
   confirm(
     pendingId: string,

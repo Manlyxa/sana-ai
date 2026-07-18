@@ -8,3 +8,4 @@ export * from './enbek-port';
 export * from './counterparty-registry-port';
 export * from './llm-port';
 export * from './payroll-port';
+export * from './document-ocr-port';

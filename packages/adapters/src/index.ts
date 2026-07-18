@@ -5,6 +5,7 @@ export * from './fixture-bank-adapter';
 export * from './fixture-tax-cabinet-adapter';
 export * from './fixture-enbek-adapter';
 export * from './fixture-payroll-adapter';
+export * from './fixture-ocr-adapter';
 export * from './fixture-counterparty-registry-adapter';
 export * from './fixture-ofd-adapter';
 export * from './mock-signature-provider';

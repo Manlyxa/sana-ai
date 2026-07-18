@@ -13,12 +13,13 @@ import {
   FixtureCounterpartyRegistryAdapter,
   FixtureEnbekAdapter,
   FixtureEsfAdapter,
+  FixtureOcrAdapter,
   FixturePayrollAdapter,
   FixtureTaxCabinetAdapter,
   MockSignatureProvider,
 } from '@sana/adapters';
 import type { CompliancePorts } from '@sana/app';
-import type { PayrollDataPort, SignaturePort } from '@sana/ports';
+import type { DocumentOcrPort, PayrollDataPort, SignaturePort } from '@sana/ports';
 import {
   CompanyRepository,
   createInMemoryDb,
@@ -45,6 +46,8 @@ export type ApiContext = {
   readonly ports: CompliancePorts;
   /** Источник ведомости начислений (§6) — отдельно от комплаенс-портов. */
   readonly payrollData: PayrollDataPort;
+  /** Распознавание первички (§8) — фикстурный OCR. */
+  readonly ocr: DocumentOcrPort;
   readonly signatures: SignaturePort;
   readonly company: Company;
   readonly accountIban: string;
@@ -91,6 +94,7 @@ export async function createDemoContext(db?: Db): Promise<ApiContext> {
       registry: new FixtureCounterpartyRegistryAdapter(),
     },
     payrollData: new FixturePayrollAdapter(),
+    ocr: new FixtureOcrAdapter(),
     signatures: new MockSignatureProvider(),
     company,
     accountIban: DEMO_IBAN,

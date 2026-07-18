@@ -1,0 +1,43 @@
+{
+  "recognitions": [
+    {
+      "match": "такси",
+      "title": "Авансовый отчёт — такси",
+      "documentType": "авансовый отчёт",
+      "date": "2026-07-14",
+      "amountTenge": 4800,
+      "counterpartyName": null,
+      "purpose": "Возмещение расходов на такси по авансовому отчёту",
+      "confidence": 81,
+      "debitAccount": "7210",
+      "creditAccount": "1250",
+      "category": "Транспортные расходы"
+    },
+    {
+      "match": "канцтовар",
+      "title": "Чек ОФД — канцтовары",
+      "documentType": "чек ОФД",
+      "date": "2026-07-15",
+      "amountTenge": 12600,
+      "counterpartyName": "ТОО «Офис Маркет»",
+      "purpose": "Покупка канцтоваров по фискальному чеку",
+      "confidence": 93,
+      "debitAccount": "7210",
+      "creditAccount": "1010",
+      "category": "Канцтовары"
+    },
+    {
+      "match": "акт",
+      "title": "Акт выполненных работ №12",
+      "documentType": "акт выполненных работ",
+      "date": "2026-07-10",
+      "amountTenge": 180000,
+      "counterpartyName": "ТОО «Сервис Плюс»",
+      "purpose": "Услуги по акту выполненных работ №12",
+      "confidence": 67,
+      "debitAccount": "7210",
+      "creditAccount": "3310",
+      "category": "Услуги сторонних организаций"
+    }
+  ]
+}
