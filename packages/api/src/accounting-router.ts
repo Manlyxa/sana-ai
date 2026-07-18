@@ -11,6 +11,7 @@ import {
   type ReportSection,
 } from '@sana/domain';
 import { AccountingWorkspace, eventsFromBankLines, eventsFromInvoices, importJournalCsv } from '@sana/app';
+import { bankDirectory } from './banks-router';
 import type { ApiContext } from './context';
 
 /**
@@ -73,19 +74,21 @@ function parseDate(iso: string): LocalDate {
 }
 
 export const accountingRouter = t.router({
-  /** Прогнать события из фикстур (ЭСФ + банк) через движок автопроводок. */
+  /** Прогнать события из фикстур (ЭСФ + все подключённые банки, §13) через движок. */
   ingestFixtures: t.procedure.mutation(async ({ ctx }) => {
     const ws = workspace(ctx);
-    const [invoices, bankLines] = await Promise.all([
-      ctx.ports.esf.listInvoices(ctx.company.bin, { from: LocalDate.of(2026, 1, 1), to: ctx.today }),
-      ctx.ports.bank.getStatement(ctx.accountIban, { from: LocalDate.of(2026, 1, 1), to: ctx.today }),
+    const range = { from: LocalDate.of(2026, 1, 1), to: ctx.today };
+    const sources = bankDirectory(ctx).connectedSources();
+    const [invoices, ...statements] = await Promise.all([
+      ctx.ports.esf.listInvoices(ctx.company.bin, range),
+      ...sources.map((s) => s.port.getStatement(s.iban, range)),
     ]);
-    if (!invoices.ok || !bankLines.ok) {
+    if (!invoices.ok || statements.some((s) => !s.ok)) {
       throw new TRPCError({ code: 'BAD_GATEWAY', message: 'источники данных недоступны' });
     }
     const events = [
       ...eventsFromInvoices(ctx.company.id, invoices.value, ctx.today),
-      ...eventsFromBankLines(ctx.company.id, bankLines.value, ctx.today),
+      ...statements.flatMap((s) => (s.ok ? eventsFromBankLines(ctx.company.id, s.value, ctx.today) : [])),
     ];
     let posted = 0;
     let queued = 0;

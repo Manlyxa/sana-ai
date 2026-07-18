@@ -9,6 +9,8 @@ import { calculatorsRouter } from './calculators-router';
 import { counterpartiesRouter } from './counterparties-router';
 import { declarationsRouter } from './declarations-router';
 import { reconciliationRouter } from './reconciliation-router';
+import { banksRouter } from './banks-router';
+import { calendarRouter } from './calendar-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -58,6 +60,12 @@ export const appRouter = router({
 
   /** Сверка данных (§12) — несовпадения человеческим языком. */
   reconciliation: reconciliationRouter,
+
+  /** Банковские счета (§13) — каркас подключения источников. */
+  banks: banksRouter,
+
+  /** Календарь сроков (§9) — дедлайны из legal-params и кабинета НП. */
+  calendar: calendarRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,
