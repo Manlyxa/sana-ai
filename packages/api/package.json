@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@sana/adapters": "workspace:*",
+    "@sana/agents": "workspace:*",
     "@sana/app": "workspace:*",
     "@sana/db": "workspace:*",
     "@sana/domain": "workspace:*",

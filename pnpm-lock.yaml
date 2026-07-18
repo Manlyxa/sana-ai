@@ -159,6 +159,9 @@ importers:
       '@sana/adapters':
         specifier: workspace:*
         version: link:../adapters
+      '@sana/agents':
+        specifier: workspace:*
+        version: link:../agents
       '@sana/app':
         specifier: workspace:*
         version: link:../app

@@ -11,6 +11,7 @@ import { declarationsRouter } from './declarations-router';
 import { reconciliationRouter } from './reconciliation-router';
 import { banksRouter } from './banks-router';
 import { calendarRouter } from './calendar-router';
+import { askRouter } from './ask-router';
 
 /**
  * tRPC API. Лента рисков отдаётся в тенге под риском (§7: не «задачи»,
@@ -66,6 +67,9 @@ export const appRouter = router({
 
   /** Календарь сроков (§9) — дедлайны из legal-params и кабинета НП. */
   calendar: calendarRouter,
+
+  /** «Спроси Sana» (§10) — ответ с нормой; расчёты уходят калькуляторам. */
+  ask: askRouter,
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,
