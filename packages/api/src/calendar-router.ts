@@ -18,7 +18,7 @@ import type { ApiContext } from './context';
 
 const t = initTRPC.context<ApiContext>().create();
 
-type Deadline = {
+export type Deadline = {
   readonly дата: string;
   readonly название: string;
   readonly подпись: string;
@@ -47,9 +47,9 @@ function deadline(
   };
 }
 
-export const calendarRouter = t.router({
-  deadlines: t.procedure.query(async ({ ctx }) => {
-    const store = createSeededStore();
+/** Все известные системе дедлайны — переиспользуется обзором (§1). */
+export async function computeDeadlines(ctx: ApiContext): Promise<{ сегодня: string; сроки: Deadline[] }> {
+  const store = createSeededStore();
     const resolve = <T>(key: ParamKey<T>): T => {
       const r = store.resolve(key, ctx.today);
       if (!r.ok) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'параметр не определён' });
@@ -120,7 +120,10 @@ export const calendarRouter = t.router({
       }
     }
 
-    items.sort((a, b) => a.дата.localeCompare(b.дата));
-    return { сегодня: ctx.today.toISO(), сроки: items };
-  }),
+  items.sort((a, b) => a.дата.localeCompare(b.дата));
+  return { сегодня: ctx.today.toISO(), сроки: items };
+}
+
+export const calendarRouter = t.router({
+  deadlines: t.procedure.query(({ ctx }) => computeDeadlines(ctx)),
 });

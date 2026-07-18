@@ -10,7 +10,8 @@ import { counterpartiesRouter } from './counterparties-router';
 import { declarationsRouter } from './declarations-router';
 import { reconciliationRouter } from './reconciliation-router';
 import { banksRouter } from './banks-router';
-import { calendarRouter } from './calendar-router';
+import { calendarRouter, computeDeadlines } from './calendar-router';
+import { accountingWorkspace } from './accounting-router';
 import { askRouter } from './ask-router';
 import { documentsRouter } from './documents-router';
 
@@ -74,6 +75,35 @@ export const appRouter = router({
 
   /** Документы (§8) — OCR-фикстура через общую очередь подтверждения. */
   documents: documentsRouter,
+
+  /**
+   * Обзор (§1) — агрегирующий use-case поверх модулей 2–5: ничего не
+   * считает сам, только читает состояние реестра, очереди, находок
+   * и календаря.
+   */
+  overview: publicProcedure.query(async ({ ctx }) => {
+    const ws = accountingWorkspace(ctx);
+    const [findings, deadlines] = await Promise.all([
+      ctx.repos.findings.listOpen(ctx.company.id),
+      computeDeadlines(ctx),
+    ]);
+    if (!findings.ok) {
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: findings.error });
+    }
+    const totalRisk = findings.value.reduce((acc, f) => acc + f.exposure.amount, 0n);
+    const upcoming = deadlines.сроки.find((d) => d.осталосьДней >= 0) ?? null;
+    return {
+      автопроводок: ws.ledger.entries().length,
+      наПодтверждении: ws.pendingOperations().length,
+      открытыхРисков: findings.value.length,
+      подРискомТиын: totalRisk.toString(),
+      подРискомТенге: (totalRisk / 100n).toString(),
+      ближайшийСрок:
+        upcoming === null
+          ? null
+          : { дата: upcoming.дата, название: upcoming.название, осталосьДней: upcoming.осталосьДней },
+    };
+  }),
 
   company: publicProcedure.query(({ ctx }) => ({
     id: ctx.company.id,
