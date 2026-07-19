@@ -1,9 +1,91 @@
 @import 'tailwindcss';
 
+/* Палитра мокапа (sana-full-app-mock-up): бирюза + глубокий индиго. */
+@theme {
+  --color-teal: #1fc8c0;
+  --color-teal-600: #12a79f;
+  --color-teal-700: #0e8880;
+  --color-teal-050: #eafbfa;
+  --color-teal-100: #d3f5f3;
+  --color-indigo-deep: #0e1b3d;
+  --color-indigo-700d: #1b2c52;
+  --color-slate-mock: #5b6b85;
+  --color-slate-light: #8695ad;
+  --color-amber-mock: #ffb454;
+  --color-amber-050: #fff5e6;
+  --color-green-mock: #28b574;
+  --color-green-050: #e8f7ef;
+  --color-coral: #ff5c5c;
+  --color-coral-050: #fdecec;
+  --color-purple-mock: #7b6bd6;
+  --color-purple-050: #f1effb;
+  --color-paper: #f6fafb;
+  --color-border-mock: #e3ecee;
+  --color-border-soft: #eef4f5;
+}
+
 :root {
   color-scheme: light;
 }
 
 body {
-  @apply bg-stone-100 text-stone-900 antialiased;
+  @apply bg-paper text-indigo-deep antialiased;
+}
+
+/* Компонентные классы дизайн-языка мокапа. */
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border-mock bg-white p-4;
+  }
+  .listcard {
+    @apply overflow-hidden rounded-2xl border border-border-mock bg-white;
+  }
+  .page-sub {
+    @apply mb-5 text-sm text-slate-mock;
+  }
+  .section-h {
+    @apply mb-3 mt-6 flex items-center gap-2 text-sm font-semibold first:mt-0;
+  }
+  .tag-sm {
+    @apply text-[11px] font-semibold text-slate-light;
+  }
+  .badge {
+    @apply whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
+  }
+  .badge-ok {
+    @apply whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-green-050 text-green-700;
+  }
+  .badge-warn {
+    @apply whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-coral-050 text-red-700;
+  }
+  .badge-amber {
+    @apply whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-amber-050 text-amber-700;
+  }
+  .badge-teal {
+    @apply whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-teal-050 text-teal-700;
+  }
+  .badge-muted {
+    @apply whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold bg-stone-100 text-slate-mock;
+  }
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition bg-teal text-[#04322f] hover:bg-teal-600 hover:text-white;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition border border-border-mock bg-white text-slate-mock hover:border-teal hover:text-teal-700;
+  }
+  .btn-green {
+    @apply inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold transition bg-green-mock text-white hover:brightness-95;
+  }
+  .row {
+    @apply flex items-center gap-3 border-b border-border-soft px-4 py-3 last:border-b-0;
+  }
+  .field-box {
+    @apply rounded-xl border border-border-soft bg-paper px-3 py-2.5;
+  }
+  .input-mock {
+    @apply w-full rounded-xl border border-border-mock px-3.5 py-2.5 text-sm outline-none focus:border-teal;
+  }
 }

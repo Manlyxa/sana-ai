@@ -1,161 +1,146 @@
-import { ensureFirstRun, getCaller } from '../lib/server';
-import { STR } from '../lib/i18n/ru';
+import Link from 'next/link';
+import { getCaller } from '../lib/server';
 import { tiynToTenge } from '../lib/format';
-import { remediateAction, runCheckAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
-type Severity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'INFO';
-type Autonomy = 'A0' | 'A1' | 'A2' | 'A3';
-
-const SEVERITY_STYLE: Record<Severity, string> = {
-  CRITICAL: 'bg-red-100 text-red-800 border-red-200',
-  HIGH: 'bg-orange-100 text-orange-800 border-orange-200',
-  MEDIUM: 'bg-amber-100 text-amber-800 border-amber-200',
-  INFO: 'bg-stone-100 text-stone-600 border-stone-200',
-};
-
-const EXPOSURE_STYLE: Record<Severity, string> = {
-  CRITICAL: 'text-red-700',
-  HIGH: 'text-orange-700',
-  MEDIUM: 'text-amber-700',
-  INFO: 'text-stone-600',
-};
-
-export default async function RiskFeedPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ notice?: string }>;
-}) {
-  await ensureFirstRun();
+/**
+ * Обзор (§1) — витрина состояния компании. Каждая цифра прочитана из
+ * своего модуля (реестр, очередь, находки, календарь) — ничего не
+ * захардкожено.
+ */
+export default async function OverviewPage() {
   const caller = await getCaller();
-  const [company, feed, ledger] = await Promise.all([
-    caller.company(),
-    caller.riskFeed(),
-    caller.ledger(),
+  const [overview, payroll, declarations] = await Promise.all([
+    caller.overview(),
+    caller.payroll.sheet({ month: '2026-M07' }),
+    caller.declarations.list(),
   ]);
-  const { notice } = await searchParams;
 
-  const totalTiyn = feed.reduce((acc, f) => acc + BigInt(f.exposureTiyn), 0n);
+  const quick = [
+    { href: '/autopost', title: 'Автопроводки', sub: `${overview.наПодтверждении} ждут решения` },
+    { href: '/guard', title: 'Sana Guard', sub: `${overview.открытыхРисков} открытых риска` },
+    { href: '/reports', title: 'Отчётность', sub: 'Баланс · ОПиУ · Кэш-флоу' },
+    { href: '/ask', title: 'Спроси Sana', sub: 'Вопрос со ссылкой на НК' },
+  ];
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-6">
-        <div className="flex items-baseline justify-between gap-4">
+    <section>
+      <p className="page-sub">Sana ведёт учёт и следит за рисками. Вам остаётся подтверждать — не считать.</p>
+
+      <div className="rounded-2xl bg-gradient-to-br from-indigo-deep via-indigo-700d to-teal-700 p-6 text-white">
+        <div className="flex items-center justify-between">
+          <span className="text-[11.5px] text-[#9FB3D6]">Состояние компании · данные реестра</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-teal/30 bg-teal/15 px-2.5 py-0.5 text-[11.5px] font-semibold text-[#9FF0EA]">
+            <i className="h-1.5 w-1.5 rounded-full bg-teal" /> Sana на связи
+          </span>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">{STR.appName}</h1>
-            <p className="text-sm text-stone-500">
-              {company.name} · БИН {company.bin} · {company.taxRegime} ·{' '}
-              {company.vatRegistered ? STR.vatStatus.registered : STR.vatStatus.notRegistered} ·{' '}
-              {company.employeeCount} {STR.employees}
-            </p>
+            <div className="text-[11.5px] text-[#9FB3D6]">Автопроводок</div>
+            <div className="text-2xl font-semibold tabular-nums text-[#7BE7B0]">{overview.автопроводок}</div>
           </div>
-          <form action={runCheckAction}>
-            <button
-              type="submit"
-              className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-stone-50"
+          <div>
+            <div className="text-[11.5px] text-[#9FB3D6]">На подтверждении</div>
+            <div className="text-2xl font-semibold tabular-nums">{overview.наПодтверждении}</div>
+          </div>
+          <div>
+            <div className="text-[11.5px] text-[#9FB3D6]">Под риском</div>
+            <div className="text-2xl font-semibold tabular-nums text-[#FF9B9B]">
+              {tiynToTenge(overview.подРискомТиын)}
+            </div>
+          </div>
+          <div>
+            <div className="text-[11.5px] text-[#9FB3D6]">Ближайший срок</div>
+            <div className="text-[17px] font-semibold tabular-nums">
+              {overview.ближайшийСрок === null ? '—' : overview.ближайшийСрок.дата}
+            </div>
+            {overview.ближайшийСрок !== null && (
+              <div className="mt-0.5 truncate text-[11px] text-[#9FB3D6]">
+                {overview.ближайшийСрок.название}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="section-h">
+        Быстрый переход <span className="tag-sm">кликните, чтобы открыть модуль</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {quick.map((q) => (
+          <Link
+            key={q.href}
+            href={q.href}
+            className="card transition hover:-translate-y-0.5 hover:border-teal"
+          >
+            <div className="mb-2 grid h-8 w-8 place-items-center rounded-lg bg-teal-050 text-sm font-bold text-teal-700">
+              →
+            </div>
+            <div className="text-sm font-semibold">{q.title}</div>
+            <div className="text-[11.5px] text-slate-light">{q.sub}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <div className="listcard">
+          <div className="row bg-paper text-xs font-semibold text-slate-mock">
+            Зарплата · {payroll.месяц}
+            <Link href="/payroll" className="ml-auto text-teal-700 hover:underline">
+              открыть →
+            </Link>
+          </div>
+          <div className="row text-sm">
+            <span>Сотрудников</span>
+            <b className="ml-auto tabular-nums">{payroll.сводка.сотрудников}</b>
+          </div>
+          <div className="row text-sm">
+            <span>Начислено</span>
+            <b className="ml-auto tabular-nums">{payroll.сводка.начислено.tenge} ₸</b>
+          </div>
+          <div className="row text-sm">
+            <span>Проверено</span>
+            <b
+              className={`ml-auto tabular-nums ${
+                payroll.сводка.проверено === payroll.сводка.сотрудников
+                  ? 'text-green-700'
+                  : 'text-amber-600'
+              }`}
             >
-              {STR.refreshCheck}
-            </button>
-          </form>
-        </div>
-
-        <div className="mt-4 rounded-xl border border-stone-200 bg-white p-4 shadow-sm">
-          <div className="text-sm text-stone-500">{STR.totalAtRisk}</div>
-          <div className="text-3xl font-bold tabular-nums text-red-700">
-            {tiynToTenge(totalTiyn.toString())}
-          </div>
-          <div className="mt-1 text-xs text-stone-500">
-            {feed.length} {STR.openFindings} ·{' '}
-            {STR.ledgerLine(ledger.events, ledger.journalEntries, ledger.taxRegisterEntries)}
+              {payroll.сводка.проверено} / {payroll.сводка.сотрудников}
+            </b>
           </div>
         </div>
 
-        {notice !== undefined && (
-          <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
-            {notice}
+        <div className="listcard">
+          <div className="row bg-paper text-xs font-semibold text-slate-mock">
+            Декларации
+            <Link href="/declarations" className="ml-auto text-teal-700 hover:underline">
+              открыть →
+            </Link>
           </div>
-        )}
-      </header>
-
-      {feed.length === 0 ? (
-        <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-center text-emerald-800">
-          {STR.emptyFeed}
-        </p>
-      ) : (
-        <ul className="space-y-4">
-          {feed.map((f) => {
-            const severity = f.severity as Severity;
-            const autonomy = f.remediation.autonomyLevel as Autonomy;
-            return (
-              <li key={f.id} className="rounded-xl border border-stone-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <span
-                    className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${SEVERITY_STYLE[severity]}`}
-                  >
-                    {STR.severity[severity]}
-                  </span>
-                  <span
-                    className={`text-2xl font-bold tabular-nums ${EXPOSURE_STYLE[severity]}`}
-                    title={STR.totalAtRisk}
-                  >
-                    {tiynToTenge(f.exposureTiyn)}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-[15px] leading-relaxed text-stone-800">{f.message}</p>
-
-                <dl className="mt-3 space-y-1 text-xs text-stone-500">
-                  <div>
-                    <dt className="inline font-medium">{STR.norm}: </dt>
-                    <dd className="inline">{f.norm}</dd>
-                  </div>
-                  <div>
-                    <dt className="inline font-medium">{STR.sourceDocuments}: </dt>
-                    <dd className="inline">
-                      {f.sourceDocuments.map((d) => `${d.documentType} ${d.documentId} (${d.system})`).join('; ')}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="inline font-medium">{STR.parameterVersion}: </dt>
-                    <dd className="inline font-mono">{f.parameterVersion}</dd>
-                  </div>
-                </dl>
-
-                <div className="mt-4 flex items-center justify-between gap-4 border-t border-stone-100 pt-3">
-                  <div className="text-sm text-stone-600">
-                    <span className="font-medium">{STR.remediation}: </span>
-                    {f.remediation.description}{' '}
-                    <span className="whitespace-nowrap rounded bg-stone-100 px-1.5 py-0.5 font-mono text-[11px] text-stone-500">
-                      {autonomy} · {STR.autonomy[autonomy]}
-                    </span>
-                  </div>
-                  {autonomy === 'A0' ? (
-                    <span className="shrink-0 text-sm text-stone-400">{STR.action.A0}</span>
-                  ) : (
-                    <form action={remediateAction} className="shrink-0">
-                      <input type="hidden" name="findingId" value={f.id} />
-                      <input type="hidden" name="autonomyLevel" value={autonomy} />
-                      <button
-                        type="submit"
-                        className={
-                          autonomy === 'A3'
-                            ? 'rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-700'
-                            : autonomy === 'A2'
-                              ? 'rounded-lg bg-sky-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-sky-700'
-                              : 'rounded-lg bg-stone-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-stone-800'
-                        }
-                      >
-                        {STR.action[autonomy]}
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </main>
+          {declarations.map((d) => (
+            <div key={d.форма} className="row text-sm">
+              <span>Форма {d.форма}</span>
+              <span className="ml-auto flex items-center gap-2">
+                {d.срок !== null && <span className="text-[11px] text-slate-light">срок {d.срок}</span>}
+                <span
+                  className={
+                    d.статус === 'Готово к сдаче'
+                      ? 'badge-ok'
+                      : d.статус === 'В процессе'
+                        ? 'badge-amber'
+                        : 'badge-muted'
+                  }
+                >
+                  {d.статус}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
