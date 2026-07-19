@@ -14,7 +14,7 @@ const t = initTRPC.context<ApiContext>().create();
 
 export const documentsRouter = t.router({
   upload: t.procedure.input(z.object({ fileName: z.string().min(1) })).mutation(async ({ ctx, input }) => {
-    const result = await intakeDocumentFile(accountingWorkspace(ctx), ctx.ocr, {
+    const result = await intakeDocumentFile(await accountingWorkspace(ctx), ctx.ocr, {
       fileName: input.fileName,
       today: ctx.today,
     });

@@ -50,7 +50,11 @@ export type PendingOperation = {
 export type ProcessOutcome =
   | { readonly kind: 'POSTED'; readonly entry: LedgerEntry; readonly proposal: PostingProposal }
   | { readonly kind: 'QUEUED'; readonly pending: PendingOperation }
-  | { readonly kind: 'NO_ENTRY' };
+  | { readonly kind: 'NO_ENTRY' }
+  /** Событие уже проведено ранее (гидратация из БД, повторный ingest). */
+  | { readonly kind: 'ALREADY_POSTED'; readonly entry: LedgerEntry }
+  /** Событие уже стоит в очереди (или было по нему решение) — не дублируем. */
+  | { readonly kind: 'ALREADY_QUEUED'; readonly pending: PendingOperation };
 
 export type WorkspaceError = { readonly message: string };
 
@@ -108,14 +112,27 @@ export class AccountingWorkspace {
     if (proposed.value === null) return ok({ kind: 'NO_ENTRY' });
     const proposal = proposed.value;
 
+    // Идемпотентность (гидратация из БД, повторный ingest): целевая проводка
+    // события детерминирована по id. Если она уже в реестре — событие было
+    // проведено ранее (авто или подтверждением), не трогаем его повторно.
+    const input = toLedgerEntryInput(proposal);
+    const existing = this.ledger.entry(input.id);
+    if (existing !== null) return ok({ kind: 'ALREADY_POSTED', entry: existing });
+
     if (decideRouting(proposal, this.threshold) === 'AUTO_POST') {
-      const posted = this.ledger.post(toLedgerEntryInput(proposal));
+      const posted = this.ledger.post(input);
       if (!posted.ok) return err({ message: posted.error.message });
       return ok({ kind: 'POSTED', entry: posted.value, proposal });
     }
 
+    // Идемпотентность очереди: по этому событию уже есть запись (в т.ч.
+    // подтверждённая/отклонённая) — не сбрасываем её в PENDING повторно.
+    const pendingId = `po-${event.id}`;
+    const alreadyQueued = this.queue.get(pendingId);
+    if (alreadyQueued !== undefined) return ok({ kind: 'ALREADY_QUEUED', pending: alreadyQueued });
+
     const pending: PendingOperation = {
-      id: `po-${event.id}`,
+      id: pendingId,
       companyId: event.companyId,
       event,
       proposal,

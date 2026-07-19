@@ -15,6 +15,13 @@
       "when": 1784404164775,
       "tag": "0001_condemned_vulture",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784407437436,
+      "tag": "0002_empty_mikhail_rasputin",
+      "breakpoints": true
     }
   ]
 }

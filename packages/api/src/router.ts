@@ -82,8 +82,8 @@ export const appRouter = router({
    * и календаря.
    */
   overview: publicProcedure.query(async ({ ctx }) => {
-    const ws = accountingWorkspace(ctx);
-    const [findings, deadlines] = await Promise.all([
+    const [ws, findings, deadlines] = await Promise.all([
+      accountingWorkspace(ctx),
       ctx.repos.findings.listOpen(ctx.company.id),
       computeDeadlines(ctx),
     ]);

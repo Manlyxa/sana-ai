@@ -6,15 +6,15 @@ import type { ApiContext } from './context';
 /**
  * «Спроси Sana» (§10): ответ со ссылкой на норму НК. Числовые вопросы
  * агент направляет к калькуляторам (§11) — деньги считает код, не LLM.
- * LLM в demo-контексте не подключена: работает детерминированная база
- * знаний с теми же нормами, что и движок.
+ * LLM (если подключена по ANTHROPIC_API_KEY) только переформулирует ответ
+ * базы знаний; норму и тему выбирает код, а расчёты уходят калькуляторам.
  */
 
 const t = initTRPC.context<ApiContext>().create();
 
 export const askRouter = t.router({
-  question: t.procedure.input(z.object({ вопрос: z.string().min(3) })).mutation(async ({ input }) => {
-    const answer = await askSana(input.вопрос, null);
+  question: t.procedure.input(z.object({ вопрос: z.string().min(3) })).mutation(async ({ ctx, input }) => {
+    const answer = await askSana(input.вопрос, ctx.llm);
     switch (answer.kind) {
       case 'ANSWER':
         return {

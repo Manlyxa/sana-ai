@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { TaxPeriod, type Money } from '@sana/domain';
 import { loadPayrollRecords, PayrollRun, type PayrollLine } from '@sana/app';
 import { buildPayrollLawParams, createSeededStore } from '@sana/legal-params';
-import { accountingWorkspace } from './accounting-router';
+import { accountingWorkspace, persistLedger } from './accounting-router';
 import type { ApiContext } from './context';
 
 /**
@@ -121,8 +121,10 @@ export const payrollRouter = t.router({
       run.confirmAll({ confirmedBy: input.confirmedBy, at: ctx.today });
       const entryInput = run.accrualEntryInput({ date: run.month.end() });
       if (!entryInput.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: entryInput.error.message });
-      const posted = accountingWorkspace(ctx).ledger.post(entryInput.value);
+      const ws = await accountingWorkspace(ctx);
+      const posted = ws.ledger.post(entryInput.value);
       if (!posted.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: posted.error.message });
+      await persistLedger(ctx, ws);
       const s = run.summary();
       return {
         сообщение: `Начислено за ${run.month.code()}: ${s.totalGross.toDecimalString()} ₸ по ${s.employees} сотрудникам.`,

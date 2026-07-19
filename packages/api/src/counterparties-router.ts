@@ -48,7 +48,7 @@ function verdictDto(v: CounterpartyVerdict) {
 export const counterpartiesRouter = t.router({
   /** (а) Контрагенты компании: сделки, суммы, статус риска. Рисковые — первыми. */
   list: t.procedure.query(async ({ ctx }) => {
-    const entries = accountingWorkspace(ctx).ledger.entries();
+    const entries = (await accountingWorkspace(ctx)).ledger.entries();
     const list = await listCompanyCounterparties(entries, ctx.ports.registry);
     return list.map((c) => ({
       бин: c.bin,

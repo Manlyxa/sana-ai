@@ -116,6 +116,30 @@ describe('AccountingWorkspace — end-to-end (Module 3)', () => {
     expect(statusChange.kind).toBe('NO_ENTRY');
   });
 
+  it('идемпотентность: повторная обработка того же события не задваивает проводку', async () => {
+    const ws = new AccountingWorkspace('co-1');
+    const first = unwrap(await ws.processEvent(esfEvent()));
+    expect(first.kind).toBe('POSTED');
+    expect(ws.ledger.size).toBe(1);
+
+    // Повторный прогон того же события (эмуляция повторного ingest после
+    // гидратации из БД) — не создаёт вторую проводку.
+    const again = unwrap(await ws.processEvent(esfEvent()));
+    expect(again.kind).toBe('ALREADY_POSTED');
+    expect(ws.ledger.size).toBe(1);
+  });
+
+  it('идемпотентность очереди: повторная обработка ТОГО ЖЕ события не дублирует запись', async () => {
+    const ws = new AccountingWorkspace('co-1');
+    const event = bankEvent({ purposeText: 'Оплата доставки' });
+    const queued = unwrap(await ws.processEvent(event));
+    if (queued.kind !== 'QUEUED') throw new Error('ожидался QUEUED');
+    // Повтор того же события (тот же id) — та же запись очереди, без дублей.
+    const again = unwrap(await ws.processEvent(event));
+    expect(again.kind).toBe('ALREADY_QUEUED');
+    expect(ws.pendingOperations()).toHaveLength(1);
+  });
+
   it('confirmation creates the journal entry AND a reusable rule that auto-posts next time', async () => {
     const ws = new AccountingWorkspace('co-1');
     const queued = unwrap(await ws.processEvent(bankEvent({ purposeText: 'Оплата доставки цветов' })));

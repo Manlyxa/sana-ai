@@ -8,6 +8,7 @@ import {
 } from '@sana/domain';
 import { buildRuleLawParams, createSeededStore } from '@sana/legal-params';
 import {
+  AnthropicLlmAdapter,
   DEMO_IBAN,
   FixtureBankAdapter,
   FixtureCounterpartyRegistryAdapter,
@@ -19,12 +20,13 @@ import {
   MockSignatureProvider,
 } from '@sana/adapters';
 import type { CompliancePorts } from '@sana/app';
-import type { DocumentOcrPort, PayrollDataPort, SignaturePort } from '@sana/ports';
+import type { DocumentOcrPort, LlmPort, PayrollDataPort, SignaturePort } from '@sana/ports';
 import {
   CompanyRepository,
   createInMemoryDb,
   EventRepository,
   FindingRepository,
+  LedgerEntryRepository,
   LedgerRepository,
   type Db,
 } from '@sana/db';
@@ -42,12 +44,20 @@ export type ApiContext = {
     readonly events: EventRepository;
     readonly findings: FindingRepository;
     readonly ledger: LedgerRepository;
+    /** Персистентность главной книги (двойная запись) — переживает рестарт. */
+    readonly ledgerEntries: LedgerEntryRepository;
   };
   readonly ports: CompliancePorts;
   /** Источник ведомости начислений (§6) — отдельно от комплаенс-портов. */
   readonly payrollData: PayrollDataPort;
   /** Распознавание первички (§8) — фикстурный OCR. */
   readonly ocr: DocumentOcrPort;
+  /**
+   * LLM для агентов и AI-классификации проводок. null, если нет
+   * ANTHROPIC_API_KEY: движок и агенты работают на детерминированных
+   * эвристиках/базе знаний (LLM никогда не считает деньги, P1).
+   */
+  readonly llm: LlmPort | null;
   readonly signatures: SignaturePort;
   readonly company: Company;
   readonly accountIban: string;
@@ -73,7 +83,15 @@ export function demoCompany(): Company {
   );
 }
 
-export async function createDemoContext(db?: Db): Promise<ApiContext> {
+export type CreateDemoContextOptions = {
+  /** Явный LLM (например MockLlmAdapter в тестах). undefined → авто по env. */
+  readonly llm?: LlmPort | null;
+};
+
+export async function createDemoContext(
+  db?: Db,
+  options: CreateDemoContextOptions = {},
+): Promise<ApiContext> {
   const database = db ?? (await createInMemoryDb());
   const company = demoCompany();
   const repos = {
@@ -81,6 +99,7 @@ export async function createDemoContext(db?: Db): Promise<ApiContext> {
     events: new EventRepository(database),
     findings: new FindingRepository(database),
     ledger: new LedgerRepository(database),
+    ledgerEntries: new LedgerEntryRepository(database),
   };
   await repos.companies.upsert(company);
   return {
@@ -95,10 +114,23 @@ export async function createDemoContext(db?: Db): Promise<ApiContext> {
     },
     payrollData: new FixturePayrollAdapter(),
     ocr: new FixtureOcrAdapter(),
+    // 'llm' in options различает «не передан» (авто по env) и явный null/мок.
+    llm: 'llm' in options ? (options.llm ?? null) : defaultLlm(),
     signatures: new MockSignatureProvider(),
     company,
     accountIban: DEMO_IBAN,
     law: unwrap(buildRuleLawParams(createSeededStore(), DEMO_TODAY)),
     today: DEMO_TODAY,
   };
+}
+
+/**
+ * Боевой LLM только при наличии ANTHROPIC_API_KEY. Без ключа — null:
+ * агенты и AI-классификатор откатываются на детерминированную логику,
+ * а тесты остаются герметичными (без внешних вызовов).
+ */
+function defaultLlm(): LlmPort | null {
+  const key = process.env['ANTHROPIC_API_KEY'];
+  if (key === undefined || key.trim() === '') return null;
+  return new AnthropicLlmAdapter();
 }

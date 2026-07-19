@@ -72,6 +72,29 @@ export const taxRegisterEntries = pgTable('tax_register_entries', {
   norm: text('norm').notNull(),
 });
 
+/**
+ * Проводки главной книги (двойная запись, Module 1–3). Append-only:
+ * только INSERT, исправления — сторнирующими записями (reversesEntryId).
+ * Порядок гарантируется seq. Период не хранится — выводится из даты.
+ */
+export const ledgerEntries = pgTable('ledger_entries', {
+  seq: bigserial('seq', { mode: 'bigint' }).notNull(),
+  id: text('id').primaryKey(),
+  companyId: text('company_id')
+    .notNull()
+    .references(() => companies.id),
+  sourceEventId: text('source_event_id').notNull(),
+  date: date('date').notNull(),
+  memo: text('memo').notNull(),
+  lines: jsonb('lines').$type<unknown>().notNull(),
+  counterpartyBin: text('counterparty_bin'),
+  counterpartyName: text('counterparty_name'),
+  category: text('category'),
+  norm: text('norm'),
+  legalParamsVersion: text('legal_params_version').notNull(),
+  reversesEntryId: text('reverses_entry_id'),
+});
+
 export const taxObligations = pgTable('tax_obligations', {
   id: text('id').primaryKey(),
   companyId: text('company_id')

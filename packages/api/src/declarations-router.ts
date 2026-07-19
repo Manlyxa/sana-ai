@@ -73,7 +73,7 @@ export const declarationsRouter = t.router({
   /** Список деклараций со статусами и цифрами из реального расчёта. */
   list: t.procedure.query(async ({ ctx }) => {
     const store = createSeededStore();
-    const entries = accountingWorkspace(ctx).ledger.entries();
+    const entries = (await accountingWorkspace(ctx)).ledger.entries();
 
     // 910.00 — расчёт за текущее полугодие.
     const half = TaxPeriod.containing('HALF_YEAR', ctx.today);
@@ -150,11 +150,11 @@ export const declarationsRouter = t.router({
   /** Полная форма 910.00 за указанное полугодие, с проводками-основаниями. */
   form910: t.procedure
     .input(z.object({ period: z.string().default('2026-H1') }).optional())
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const period = parseHalfYear(input?.period ?? '2026-H1');
       const params = buildForm910Params(createSeededStore(), ctx.today);
       if (!params.ok) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'параметры не собраны' });
-      const form = computeForm910(accountingWorkspace(ctx).ledger.entries(), period, params.value);
+      const form = computeForm910((await accountingWorkspace(ctx)).ledger.entries(), period, params.value);
       if (!form.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: form.error.message });
       const f = form.value;
       return {

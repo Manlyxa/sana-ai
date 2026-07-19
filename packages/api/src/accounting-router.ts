@@ -22,21 +22,53 @@ import type { ApiContext } from './context';
 
 const t = initTRPC.context<ApiContext>().create();
 
-/** In-memory workspace per API context (single-company MVP). */
-const workspaces = new WeakMap<object, AccountingWorkspace>();
+/**
+ * Один workspace на контекст, гидратированный из БД. Кэшируется как
+ * Promise, чтобы параллельные запросы не создали два реестра и не
+ * проиграли проводки дважды (иначе DUPLICATE_ID при гидратации).
+ */
+const workspaces = new WeakMap<object, Promise<AccountingWorkspace>>();
 
-/** Единый бухгалтерский workspace контекста — общий реестр для всех модулей. */
-export function accountingWorkspace(ctx: ApiContext): AccountingWorkspace {
-  return workspace(ctx);
+/**
+ * Единый бухгалтерский workspace контекста. При первом обращении
+ * восстанавливает проводки из БД (переживает рестарт процесса).
+ */
+export async function accountingWorkspace(ctx: ApiContext): Promise<AccountingWorkspace> {
+  let pending = workspaces.get(ctx);
+  if (pending === undefined) {
+    pending = hydrateWorkspace(ctx);
+    workspaces.set(ctx, pending);
+  }
+  return pending;
 }
 
-function workspace(ctx: ApiContext): AccountingWorkspace {
-  let ws = workspaces.get(ctx);
-  if (ws === undefined) {
-    ws = new AccountingWorkspace(ctx.company.id);
-    workspaces.set(ctx, ws);
+async function hydrateWorkspace(ctx: ApiContext): Promise<AccountingWorkspace> {
+  // LLM подключается только для AI-классификации неоднозначных
+  // банковских операций (суммы всегда считает код, P1).
+  const ws = new AccountingWorkspace(ctx.company.id, ctx.llm !== null ? { llm: ctx.llm } : {});
+  const persisted = await ctx.repos.ledgerEntries.list(ctx.company.id);
+  if (!persisted.ok) {
+    throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: `реестр повреждён: ${persisted.error}` });
+  }
+  // Проигрываем сохранённые проводки в порядке seq в свежий реестр.
+  for (const entry of persisted.value) {
+    const replayed = ws.ledger.post(entry);
+    if (!replayed.ok) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: `не удалось восстановить проводку ${entry.id}: ${replayed.error.message}`,
+      });
+    }
   }
   return ws;
+}
+
+/**
+ * Дозаписать проводки реестра в БД (append-only, идемпотентно).
+ * Вызывается после каждой операции, добавляющей проводки.
+ */
+export async function persistLedger(ctx: ApiContext, ws: AccountingWorkspace): Promise<void> {
+  await ctx.repos.ledgerEntries.append(ws.ledger.entries());
 }
 
 function money(m: Money): { tiyn: string; tenge: string } {
@@ -76,7 +108,7 @@ function parseDate(iso: string): LocalDate {
 export const accountingRouter = t.router({
   /** Прогнать события из фикстур (ЭСФ + все подключённые банки, §13) через движок. */
   ingestFixtures: t.procedure.mutation(async ({ ctx }) => {
-    const ws = workspace(ctx);
+    const ws = await accountingWorkspace(ctx);
     const range = { from: LocalDate.of(2026, 1, 1), to: ctx.today };
     const sources = bankDirectory(ctx).connectedSources();
     const [invoices, ...statements] = await Promise.all([
@@ -100,8 +132,9 @@ export const accountingRouter = t.router({
       }
       if (outcome.value.kind === 'POSTED') posted += 1;
       else if (outcome.value.kind === 'QUEUED') queued += 1;
-      else skipped += 1;
+      else skipped += 1; // NO_ENTRY / ALREADY_POSTED / ALREADY_QUEUED
     }
+    await persistLedger(ctx, ws);
     return {
       сообщение: `Обработано событий: ${events.length}; проведено автоматически: ${posted}; в очереди подтверждения: ${queued}.`,
       events: events.length,
@@ -112,8 +145,8 @@ export const accountingRouter = t.router({
   }),
 
   /** Очередь подтверждения (Module 3). */
-  queue: t.procedure.query(({ ctx }) =>
-    workspace(ctx)
+  queue: t.procedure.query(async ({ ctx }) =>
+    (await accountingWorkspace(ctx))
       .pendingOperations()
       .map((p) => ({
         id: p.id,
@@ -142,8 +175,8 @@ export const accountingRouter = t.router({
         account: z.object({ from: z.string(), to: z.string(), category: z.string().nullish() }).nullish(),
       }),
     )
-    .mutation(({ ctx, input }) => {
-      const ws = workspace(ctx);
+    .mutation(async ({ ctx, input }) => {
+      const ws = await accountingWorkspace(ctx);
       const args = { confirmedBy: input.confirmedBy, at: ctx.today };
       const result = input.account
         ? ws.confirmWithAccount(input.pendingId, {
@@ -154,6 +187,7 @@ export const accountingRouter = t.router({
           })
         : ws.confirm(input.pendingId, args);
       if (!result.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: result.error.message });
+      await persistLedger(ctx, ws);
       return {
         сообщение: `Проводка ${result.value.entry.id} создана.`,
         entryId: result.value.entry.id,
@@ -164,8 +198,8 @@ export const accountingRouter = t.router({
   /** Отклонить с причиной. */
   reject: t.procedure
     .input(z.object({ pendingId: z.string(), rejectedBy: z.string().min(1), reason: z.string() }))
-    .mutation(({ ctx, input }) => {
-      const result = workspace(ctx).reject(input.pendingId, {
+    .mutation(async ({ ctx, input }) => {
+      const result = (await accountingWorkspace(ctx)).reject(input.pendingId, {
         rejectedBy: input.rejectedBy,
         at: ctx.today,
         reason: input.reason,
@@ -177,8 +211,8 @@ export const accountingRouter = t.router({
   /** Закрыть месячный период (Module 1). */
   closePeriod: t.procedure
     .input(z.object({ period: z.string() }))
-    .mutation(({ ctx, input }) => {
-      const result = workspace(ctx).ledger.closePeriod(parsePeriod(input.period));
+    .mutation(async ({ ctx, input }) => {
+      const result = (await accountingWorkspace(ctx)).ledger.closePeriod(parsePeriod(input.period));
       if (!result.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: result.error.message });
       return { сообщение: `Период ${result.value.code()} закрыт.` };
     }),
@@ -186,13 +220,13 @@ export const accountingRouter = t.router({
   /** ОСВ за период, с фильтром субледжера (Module 1). */
   trialBalance: t.procedure
     .input(z.object({ period: z.string(), counterpartyBin: z.string().nullish(), category: z.string().nullish() }))
-    .query(({ ctx, input }) => {
+    .query(async ({ ctx, input }) => {
       const filter = {
         ...(input.counterpartyBin ? { counterpartyBin: input.counterpartyBin } : {}),
         ...(input.category ? { category: input.category } : {}),
       };
       const tb = trialBalance(
-        workspace(ctx).ledger.entries(),
+        (await accountingWorkspace(ctx)).ledger.entries(),
         parsePeriod(input.period),
         Object.keys(filter).length > 0 ? { filter } : {},
       );
@@ -218,8 +252,8 @@ export const accountingRouter = t.router({
     }),
 
   /** Баланс на дату (Module 4). */
-  balanceSheet: t.procedure.input(z.object({ asOf: z.string() })).query(({ ctx, input }) => {
-    const bs = balanceSheet(workspace(ctx).ledger.entries(), parseDate(input.asOf));
+  balanceSheet: t.procedure.input(z.object({ asOf: z.string() })).query(async ({ ctx, input }) => {
+    const bs = balanceSheet((await accountingWorkspace(ctx)).ledger.entries(), parseDate(input.asOf));
     return {
       наДату: bs.asOf.toISO(),
       активы: sectionDto(bs.assets),
@@ -230,8 +264,8 @@ export const accountingRouter = t.router({
   }),
 
   /** ОПиУ за период (Module 4). */
-  profitLoss: t.procedure.input(z.object({ period: z.string() })).query(({ ctx, input }) => {
-    const pl = profitLossStatement(workspace(ctx).ledger.entries(), parsePeriod(input.period));
+  profitLoss: t.procedure.input(z.object({ period: z.string() })).query(async ({ ctx, input }) => {
+    const pl = profitLossStatement((await accountingWorkspace(ctx)).ledger.entries(), parsePeriod(input.period));
     return {
       период: pl.period.code(),
       доходы: sectionDto(pl.revenue),
@@ -241,8 +275,8 @@ export const accountingRouter = t.router({
   }),
 
   /** ОДДС (прямой метод) за период (Module 4). */
-  cashFlow: t.procedure.input(z.object({ period: z.string() })).query(({ ctx, input }) => {
-    const cf = cashFlowStatement(workspace(ctx).ledger.entries(), parsePeriod(input.period));
+  cashFlow: t.procedure.input(z.object({ period: z.string() })).query(async ({ ctx, input }) => {
+    const cf = cashFlowStatement((await accountingWorkspace(ctx)).ledger.entries(), parsePeriod(input.period));
     const section = (s: typeof cf.operating) => ({
       раздел: s.title,
       итого: money(s.net),
@@ -269,8 +303,8 @@ export const accountingRouter = t.router({
   /** Импорт журнала из CSV (выгрузка Excel) — Module 4. */
   importJournal: t.procedure
     .input(z.object({ csv: z.string(), fileName: z.string().min(1) }))
-    .mutation(({ ctx, input }) => {
-      const ws = workspace(ctx);
+    .mutation(async ({ ctx, input }) => {
+      const ws = await accountingWorkspace(ctx);
       const imported = importJournalCsv(input.csv, { companyId: ctx.company.id, fileName: input.fileName });
       if (!imported.ok) {
         return {
@@ -285,6 +319,7 @@ export const accountingRouter = t.router({
           throw new TRPCError({ code: 'BAD_REQUEST', message: posted.error.message });
         }
       }
+      await persistLedger(ctx, ws);
       return {
         успех: true as const,
         сообщение: `Импортировано проводок: ${imported.value.entries.length}.`,
@@ -300,8 +335,8 @@ export const accountingRouter = t.router({
         z.object({ reportLineId: z.string(), period: z.string() }),
       ]),
     )
-    .query(({ ctx, input }) => {
-      const ws = workspace(ctx);
+    .query(async ({ ctx, input }) => {
+      const ws = await accountingWorkspace(ctx);
       const result =
         'ledgerEntryId' in input
           ? ws.explain({ kind: 'LEDGER_ENTRY', ledgerEntryId: input.ledgerEntryId })
