@@ -52,9 +52,13 @@ describe('payroll API', () => {
       .filter((l) => l.сторона === 'Кт')
       .reduce((sum, l) => sum + BigInt(l.сумма.tiyn), 0n);
     expect(debit).toBe(credit);
-    // Повторное начисление того же месяца отвергается (append-only, без дублей).
-    await expect(
-      caller.payroll.confirmAllAndAccrue({ month: '2026-M07', confirmedBy: 'Айгерим' }),
-    ).rejects.toThrow();
+    expect(accrued.уже).toBe(false);
+
+    // Повторное начисление того же месяца идемпотентно: не падает, а
+    // сообщает «уже начислено» и возвращает ту же проводку (без дублей).
+    const again = await caller.payroll.confirmAllAndAccrue({ month: '2026-M07', confirmedBy: 'Айгерим' });
+    expect(again.уже).toBe(true);
+    expect(again.entryId).toBe(accrued.entryId);
+    expect(again.сообщение).toContain('уже начислена');
   });
 });

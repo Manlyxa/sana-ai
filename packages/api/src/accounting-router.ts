@@ -313,16 +313,32 @@ export const accountingRouter = t.router({
           ошибки: imported.error.map((d) => ({ строка: d.row, сообщение: d.message })),
         };
       }
+      // Повторный импорт того же файла идемпотентен: проводки уже в
+      // реестре (DUPLICATE_ID) пропускаем; настоящие ошибки — невалидная
+      // проводка, закрытый период — по-прежнему отклоняем.
+      let добавлено = 0;
+      let ужеБыло = 0;
       for (const entry of imported.value.entries) {
         const posted = ws.ledger.post(entry);
-        if (!posted.ok) {
-          throw new TRPCError({ code: 'BAD_REQUEST', message: posted.error.message });
+        if (posted.ok) {
+          добавлено += 1;
+          continue;
         }
+        if (posted.error.kind === 'DUPLICATE_ID') {
+          ужеБыло += 1;
+          continue;
+        }
+        throw new TRPCError({ code: 'BAD_REQUEST', message: posted.error.message });
       }
       await persistLedger(ctx, ws);
       return {
         успех: true as const,
-        сообщение: `Импортировано проводок: ${imported.value.entries.length}.`,
+        сообщение:
+          ужеБыло === 0
+            ? `Импортировано проводок: ${добавлено}.`
+            : `Импортировано новых: ${добавлено}; уже были в реестре: ${ужеБыло}.`,
+        добавлено,
+        ужеБыло,
         entryIds: imported.value.entries.map((e) => e.id),
       };
     }),

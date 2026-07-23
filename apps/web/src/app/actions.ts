@@ -127,14 +127,17 @@ export async function payrollConfirmAction(formData: FormData): Promise<void> {
 
 export async function payrollAccrueAllAction(): Promise<void> {
   const caller = await getCaller();
+  // Показываем реальное сообщение use-case (в т.ч. «уже начислено»),
+  // а не хардкод. redirect() вне try/catch — он бросает NEXT_REDIRECT.
+  let notice: string;
   try {
-    await caller.payroll.confirmAllAndAccrue({ month: '2026-M07', confirmedBy: OWNER });
+    const result = await caller.payroll.confirmAllAndAccrue({ month: '2026-M07', confirmedBy: OWNER });
+    notice = result.сообщение;
   } catch (e) {
-    revalidatePath('/', 'layout');
-    redirect(`/payroll?notice=${encodeURIComponent(message(e))}`);
+    notice = message(e);
   }
   revalidatePath('/', 'layout');
-  redirect('/payroll?notice=' + encodeURIComponent('Начислено за 2026-M07 — проводка в реестре.'));
+  redirect(`/payroll?notice=${encodeURIComponent(notice)}`);
 }
 
 // --- Банки (§13) -----------------------------------------------------------

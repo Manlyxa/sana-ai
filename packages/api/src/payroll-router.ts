@@ -122,11 +122,30 @@ export const payrollRouter = t.router({
       const entryInput = run.accrualEntryInput({ date: run.month.end() });
       if (!entryInput.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: entryInput.error.message });
       const ws = await accountingWorkspace(ctx);
+      const s = run.summary();
+
+      // Начисление за месяц идемпотентно: проводка одна на месяц
+      // (payroll-<company>-<month>). Если уже начислено — не падаем
+      // на DUPLICATE_ID, а сообщаем об этом.
+      const existing = ws.ledger.entry(entryInput.value.id);
+      if (existing !== null) {
+        return {
+          уже: true as const,
+          сообщение: `Зарплата за ${run.month.code()} уже начислена (проводка ${existing.id}).`,
+          entryId: existing.id,
+          проводка: existing.lines.map((l) => ({
+            счёт: l.account,
+            сторона: l.side === 'DEBIT' ? 'Дт' : 'Кт',
+            сумма: money(l.amount),
+          })),
+        };
+      }
+
       const posted = ws.ledger.post(entryInput.value);
       if (!posted.ok) throw new TRPCError({ code: 'BAD_REQUEST', message: posted.error.message });
       await persistLedger(ctx, ws);
-      const s = run.summary();
       return {
+        уже: false as const,
         сообщение: `Начислено за ${run.month.code()}: ${s.totalGross.toDecimalString()} ₸ по ${s.employees} сотрудникам.`,
         entryId: posted.value.id,
         проводка: posted.value.lines.map((l) => ({

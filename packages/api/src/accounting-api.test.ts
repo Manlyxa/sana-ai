@@ -65,6 +65,23 @@ describe('accounting API', () => {
     }
   });
 
+  it('повторный импорт того же файла идемпотентен: дубли пропускаются, не падает', async () => {
+    const csv = ['Дата;Дт;Кт;Сумма;Описание', '2026-04-03;1030;5030;700000;Взнос'].join('\n');
+    const first = await caller.accounting.importJournal({ csv, fileName: 'reimport.csv' });
+    expect(first.успех).toBe(true);
+    if (first.успех) {
+      expect(first.добавлено).toBe(1);
+      expect(first.ужеБыло).toBe(0);
+    }
+    const second = await caller.accounting.importJournal({ csv, fileName: 'reimport.csv' });
+    expect(second.успех).toBe(true);
+    if (second.успех) {
+      expect(second.добавлено).toBe(0);
+      expect(second.ужеБыло).toBe(1);
+      expect(second.сообщение).toContain('уже были в реестре');
+    }
+  });
+
   it('explains a journal entry and a report line end-to-end', async () => {
     const tb = await caller.accounting.trialBalance({ period: '2026' });
     const entryId = tb.строки.find((r) => r.entryIds.length > 0)?.entryIds[0];

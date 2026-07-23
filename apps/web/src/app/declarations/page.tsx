@@ -48,39 +48,20 @@ export default async function DeclarationsPage({
               {d.статус}
             </span>
             {d.форма === '910.00' && (
-              <Link href="/declarations?form=910" className="btn-ghost !px-3 !py-1.5 text-[12px]">
-                Открыть
+              <Link
+                href={form === '910' ? '/declarations' : '/declarations?form=910'}
+                className="btn-ghost !px-3 !py-1.5 text-[12px]"
+              >
+                {form === '910' ? 'Закрыть' : 'Открыть'}
               </Link>
             )}
           </div>
         ))}
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        {list.map((d) => (
-          <div key={d.форма} className="card">
-            <div className="mb-2 text-[13px] font-semibold">Форма {d.форма}</div>
-            <div className="grid gap-2">
-              {Object.entries(d.поля).map(([k, v]) => (
-                <div key={k} className="field-box">
-                  <div className="text-[11px] text-slate-light">{k}</div>
-                  <div className="text-[14px] font-semibold tabular-nums">
-                    {typeof v === 'object' && v !== null && 'tenge' in v
-                      ? `${(v as { tenge: string }).tenge} ₸`
-                      : String(v)}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 text-[11px] text-slate-light">
-              Норма: {d.норма} · {d.версияПараметров}
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {/* Деталь формы 910 — сразу под списком, чтобы «Открыть» давало видимый отклик. */}
       {detail910 !== null && (
-        <div className="card mt-5 border-teal">
+        <div className="card mt-4 border-teal">
           <div className="text-[15px] font-semibold">Форма 910.00 — полный расчёт</div>
           <div className="mt-0.5 text-[12.5px] text-slate-mock">
             Упрощённая декларация · {detail910.период} · срок сдачи {detail910.срокСдачи}
@@ -111,6 +92,29 @@ export default async function DeclarationsPage({
           </div>
         </div>
       )}
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+        {list.map((d) => (
+          <div key={d.форма} className="card">
+            <div className="mb-2 text-[13px] font-semibold">Форма {d.форма}</div>
+            <div className="grid gap-2">
+              {Object.entries(d.поля).map(([k, v]) => (
+                <div key={k} className="field-box">
+                  <div className="text-[11px] text-slate-light">{k}</div>
+                  <div className="text-[14px] font-semibold tabular-nums">
+                    {typeof v === 'object' && v !== null && 'tenge' in v
+                      ? `${(v as { tenge: string }).tenge} ₸`
+                      : String(v)}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 text-[11px] text-slate-light">
+              Норма: {d.норма} · {d.версияПараметров}
+            </div>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
